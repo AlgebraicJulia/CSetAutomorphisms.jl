@@ -1,2 +1,4 @@
 # CSetAutomorphisms
-Automorphism groups for CSets - generalizing the nauty algorithm to a broad class of data structures
+
+
+Based on implementation specified in this [paper](https://www.math.unl.edu/~aradcliffe1/Papers/Canonical.pdf).

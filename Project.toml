@@ -1,0 +1,8 @@
+name = "CSetAutomorphisms"
+uuid = "1602be87-98d2-44e8-83ad-5679ea8c0714"
+authors = ["Kris Brown <ksb@stanford.edu>"]
+version = "0.1.0"
+
+[deps]
+Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
+PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
