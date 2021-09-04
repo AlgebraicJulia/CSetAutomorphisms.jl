@@ -11,6 +11,7 @@ include(joinpath(@__DIR__, "../src/CSetAutomorphisms.jl"))
 
 
 # Helper functions for writing tests
+####################################
 function xs(x::Int)::Symbol
   return Symbol("x$x")
 end
@@ -63,6 +64,8 @@ function test_iso(a::StructACSet,b::StructACSet, eq::Bool=true)::Test.Pass
   @test tst(canonical_hash(a) == canonical_hash(b))
 end
 
+# Tests
+#######
 
 G,H = Graph(4), Graph(4);
 add_edges!(G,[1,2,4,4,3],[2,4,3,3,2]);

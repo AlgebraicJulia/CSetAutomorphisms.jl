@@ -1,4 +1,5 @@
 using Catlab.Present, Catlab.Theories, Catlab.CategoricalAlgebra
+include(joinpath(@__DIR__, "../src/CSetAutomorphisms.jl"))
 
 @present TheoryRxn(FreeSchema) begin
   (Molecule, Atom, Bond)::Ob
@@ -36,5 +37,7 @@ r1, r2 = Rxn(), Rxn()
 
 println(r1==r2) # false
 println(is_isomorphic(r1, r2)) # true
+println(canonical_hash(r1)) # 12244109900905077714
+println(canonical_hash(r2)) # 12244109900905077714
 
 
