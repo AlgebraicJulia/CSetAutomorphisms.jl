@@ -71,6 +71,7 @@ function pseudo_cset(g::StructACSet{S}
   return res, attrvals
 end
 
+pluspair(x::Pair{Int, Int}, y::Pair{Int,Int})::Pair{Int,Int} = x[1]+y[1] => x[2]+y[2]
 """
 Heuristic for total ordering of objects of a CSet. We want things that will
 be easily distinguished to be first. Things are very easily distinguished by
@@ -78,6 +79,16 @@ in-arrows, and somewhat distinguished by out arrows. So each object gets a
 score based on this criteria. We then iterate until convergence.
 
 We use this total ordering to order arrows by their target's score.
+
+As an example, consider the triangle:
+     f
+  A --> B
+  g ↘  ↙ h
+     C
+The stable order of the objects is:
+  [A (low, high), B (mid mid), C (high, low)]
+This induces an order on the arrows:
+  [f (low+mid, high+mid), g (low+high, high+low), h (mid+high, mid+low)]
 
 TO DO test this heuristic vs random heuristics to see that it's actually
 effective.
@@ -89,17 +100,20 @@ function order_syms(::StructACSet{S})::Vector{Symbol} where {S}
     arr_ot = sum([scores[t][2] for (s, t) in zip(srcs, tgts) if s == obj])
     return arr_in => arr_ot
   end
+  getorder(scores)::Vector{Symbol} = map(last, sort([(b,a) for (a,b)
+                                                     in collect(scores)]))
   scores = Dict(zip(os, [(1=>1) for _ in os]))
   oldorder = []
-  neworder = sort([(b,a) for (a,b) in collect(scores)])
+  neworder = getorder(scores)
+  scorediffs, scorediff = Set(),
   while oldorder != neworder
     oldorder = neworder
-    scores = Dict([o=>score_obj(o, scores) for o in os])
-    neworder = sort([(b,a) for (a,b) in collect(scores)])
+    scores = Dict([o=> pluspair(scores[o],score_obj(o, scores)) for o in os])
+    neworder = getorder(scores)
   end
-  ordobjs = [s for (_,s) in oldorder]
-  ordarrs = sort([(findfirst(==(t),ordobjs), h) for (h, t) in zip(arrs, tgts)])
-  return [a for (_,a) in ordarrs]
+  ordarrs = [(h, pluspair(scores[s], scores[t]))
+             for (h, s, t) in zip(arrs, srcs, tgts)]
+  return reverse(getorder(ordarrs))
 end
 
 """
@@ -126,8 +140,9 @@ end
 """Lexicographic minimum of all automorphisms"""
 function canonical_iso(g::StructCSet{S})::StructCSet{S} where {S}
   os = order_syms(g)
+  opt = sort(collect(autos(g)[1]), by=(γ->order_perms(g, γ, os)))
   ord(x) = [x[s] for s in os]
-  isos = sort([apply_automorphism(g, Dict(a)) for a in autos(g)], by=ord)
+  isos = sort([apply_automorphism(g, Dict(a)) for a in autos(g)[1]], by=ord)
   return isempty(isos) ? g : isos[1]
 end
 
@@ -141,7 +156,7 @@ function canonical_iso(g::StructACSet{S})::StructACSet{S} where {S}
 
   p, avals = pseudo_cset(g)
   isos = sort([pseudo_cset_inv(apply_automorphism(p, Dict(a)), g, avals)
-               for a in autos(p)], by=ord)
+               for a in autos(p)[1]], by=ord)
   return isempty(isos) ? g : isos[1]
 end
 
@@ -160,6 +175,24 @@ function common(v1::Vector{T}, v2::Vector{T})::Int where {T}
   return i
 end
 
+mutable struct Tree
+  coloring::CDict
+  children::Dict{Pair{Symbol, Int},Tree}
+  function Tree(c::CDict)
+    return new(c, Dict{Pair{Symbol, Int},Tree}())
+  end
+end
+
+function Base.size(t::Tree)::Int
+  return isempty(t.children) ? 1 : 1 + sum(map(Base.size, values(t.children)))
+end
+function Base.getindex(t::Tree, pth::Vector{Pair{Symbol, Int}})::Tree
+  ptr = t
+  for p in pth
+    ptr = ptr.children[p]
+  end
+  return ptr
+end
 
 """
 DFS tree of colorings, with edges being choices in how to break symmetry
@@ -167,74 +200,158 @@ Goal is to acquire all leaf nodes.
 
 Algorithm from "McKay’s Canonical Graph Labeling Algorithm" by Hartke and
 Radcliffe (2009).
-"""
-function search_tree!(g::StructACSet{S}, res::Vector{CDict},
-                     coloring::CDict,
-                     split_seq::Vector{Int},
-                     tree::Dict{Vector{Int},CDict},
-                     perms::Set{Vector{Int}},
-                     skip::Set{Vector{Int}}
-                    )::Nothing where {S}
-  tree[split_seq] = coloring # add the current color to the tree
 
+McKay's "Practical Graph Isomorphism" (Section 2.29: "storage of identity
+nodes") warns that it's not a good idea to check for every possible automorphism
+pruning (for memory and time concerns). To do: look into doing this in a more
+balanced way. Profiling code will probably reveal that checking for automorphism
+pruning is a bottleneck.
+"""
+function search_tree!(g::StructACSet{S}, res::Set{CDict},
+                     split_seq::Vector{Pair{Symbol, Int}},
+                     tree::Tree,
+                     leafnodes::Set{Vector{Pair{Symbol, Int}}},
+                     perm_worsts::Set{Vector{VUNI}},
+                     skip::Set{Vector{Pair{Symbol, Int}}};
+                     verbose::Bool=false,
+                     auto_prune::Bool=true,
+                     orbit_prune::Bool=true,
+                     order_prune::Bool=true,
+                    )::Nothing where {S}
+  #tree[split_seq] = coloring # add the current color to the tree
   # To reduce branching factor, split on the SMALLEST nontrivial partition
-  colors_by_size = []
-  for (k, v) in coloring
-    for color in 1:max0(v)
-      n_c = count(==(color), v)
-      if n_c > 1
-        # Store which table and which color
-        push!(colors_by_size, n_c => (k, color))
-      end
-    end
+  curr_tree = tree[split_seq]
+  coloring = curr_tree.coloring
+  if verbose
+    println("\nSTART $split_seq ||| $coloring")
   end
+  colors_by_size = get_colors_by_size(coloring)
 
   if isempty(colors_by_size) # We found a leaf!
-    # Construct automorphisms between leaves
-    # to possibly prune the search tree. See Figure 4
-    tau_inv = invert_perm(coloring)
-    for p in perms
-      pii = tree[p]
-      auto = compose_perms(pii,tau_inv)
-      i = common(p, split_seq)
-      a = tree[p[1:i]]
-      if compose_perms(auto, a) == a
-        b = tree[p[1:i+1]]
-        c_location = split_seq[1:i+1]
-        c = tree[c_location]
-        if compose_perms(auto, b) == c
-          push!(skip, c_location)
+    if verbose
+      println("\tFOUND PERM!")
+    end
+    if auto_prune
+      t, τ = split_seq, coloring
+      for p in leafnodes
+        π = tree[p].coloring
+        i = common(p, t)
+        a = p[1:i] # == t[1:i]
+        b, c = p[1:i+1], t[1:i+1]
+        a_, b_, c_ = [tree[x].coloring for x in [a,b,c]]
+        γ = compose_perms(π, invert_perm(τ))
+        if (compose_perms(γ, a_) == a_ &&
+            compose_perms(γ, b_) == c_)
+          if verbose
+            println("\tAUTO PRUNE using leaf $p")
+          end
+          # skip everything from c to a
+          for i in length(c):length(t)
+            push!(skip, t[1:i])
+          end
+          break
         end
       end
     end
     # Add permutation to the list of results
-    push!(perms, split_seq)
+    push!(leafnodes, split_seq)
     push!(res, coloring)
   else
-    sort!(colors_by_size)
+    # check if we can prune due to automorphisms.  See Figure 4
+    # check if we can prune due to objective rank
+    if order_prune
+      os = order_syms(g)
+      best, worst = order_perms(g, coloring, os)
+      for p_worst in perm_worsts
+        if compare_perms(p_worst, best) == false
+          if verbose println("ORDER PRUNE") end
+          return nothing
+        end
+      end
+      # this partition isn't STRICTLY worse than anything seen so far
+      push!(perm_worsts, worst)
+    end
+
+    # Branch on this leaf
+    sort!(colors_by_size, rev=true)
     split_tab, split_color = colors_by_size[1][2]
+    if verbose
+      println("splitting on $split_tab#$split_color")
+    end
     colors = coloring[split_tab]
     split_inds = findall(==(split_color), colors)
     for split_ind in split_inds
-      if  !(split_seq in skip)
+      if verbose
+        println("split_ind on $split_ind (res=$res)")
+      end
+
+      orb = orbit_prune && orbit_check(curr_tree, split_tab, split_color; verbose=verbose)
+      if orb && verbose
+        println("\nORBIT PRUNE @ $split_seq")
+      end
+      if split_seq ∉ skip && !orb
         new_coloring = deepcopy(coloring)
-        new_seq = vcat(split_seq, [split_ind])
+        new_seq = vcat(split_seq, [split_tab => split_ind])
         new_coloring[split_tab][split_ind] = max0(colors) + 1
         refined = color_refine(g; init_color=new_coloring)
-        search_tree!(g, res, refined, new_seq, tree, perms, skip)
+        new_tree = Tree(refined)
+        curr_tree.children[split_tab=>split_ind] = new_tree
+        search_tree!(g, res, new_seq, tree, leafnodes, perm_worsts, skip;
+                    verbose=verbose,
+                    auto_prune=auto_prune,
+                    orbit_prune=orbit_prune,order_prune=order_prune)
       end
     end
+     # all children's worsts are now in the set
+    if order_prune delete!(perm_worsts, worst) end
   end
+
   return nothing
+end
+function get_leaves(t::Tree)::Vector{Vector{Pair{Symbol, Int}}}
+  if isempty(t.children)
+    return [Pair{Symbol,Int}[]]
+  else
+    res = []
+    for (kv, c) in t.children
+      for pth in get_leaves(c)
+        push!(res, vcat([kv],pth))
+      end
+    end
+    return res
+  end
+end
+"""Look at all automorphisms between leaf nodes. If they generate a group with just one orbit in the specific part where the current tree got differentiated, we need not explore further (returns true)"""
+function orbit_check(t::Tree, pₛ::Symbol, pᵢ::Int; verbose::Bool=false)::Bool
+  leaves, auts = get_leaves(t), Perm[]
+  for i in 1:length(leaves)
+    icolor = t[leaves[i]].coloring
+    for j in i+1:length(leaves)
+      jcolor = t[leaves[j]].coloring
+      push!(auts,Perm(compose_perms(icolor, invert_perm(jcolor))[pₛ]))
+    end
+  end
+  all_i = findall(==(pᵢ), t.coloring[pₛ])
+  length(all_i) > 1 || error("branched on nontrivial color")
+  o = Orbit(auts, all_i[1])
+  if verbose
+    println("pₛpᵢ=$pₛ$pᵢ all_i=$all_i \nauts=$auts\norb=$(collect(o))") end
+  return isempty(setdiff(all_i, collect(o)))
 end
 
 """Compute the automorphisms of a CSet"""
-function autos(g::StructACSet)::Set{CDict}
-  res = CDict[]
-  search_tree!(g, res, color_refine(g), Int[],
-             Dict{Vector{Int},CDict}(),
-             Set{Vector{Int}}(),
-             Set{Vector{Int}}())
-  return Set(res) # all_perms(res)
+function autos(g::StructACSet; verbose::Bool=false,
+                auto_prune::Bool=true,
+                orbit_prune::Bool=true,
+                order_prune::Bool=true)::Tuple{Set{CDict},Tree}
+  res = Set{CDict}()
+  tree = Tree(color_refine(g))
+  search_tree!(g, res, Vector{Pair{Symbol, Int}}(),
+             tree, Set{Vector{Pair{Symbol, Int}}}(),
+             Set{Vector{VUNI}}(),Set{Vector{Pair{Symbol, Int}}}(); verbose=verbose,
+             auto_prune=auto_prune,
+             orbit_prune=orbit_prune,
+             order_prune=order_prune)
+  return res, tree # all_perms(res)
 end
 

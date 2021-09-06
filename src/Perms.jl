@@ -79,3 +79,79 @@ function apply_automorphism(c::StructACSet{S}, d::CDict)::StructACSet{S} where {
   end
   return new
 end
+
+"""
+Suppose we have a set of candidates for "best permutation"
+  (results in lexicographic min ACSet so far)
+
+We get a new candidate that is a refinement of a previous candidate
+
+Handle ambiguity by computing best case and worst case scenarios.
+
+A nothing means the two are not comparable. True means a<b. False means b < a.
+"""
+VUNI = Vector{Union{Nothing, Int}}
+
+function compare_perms(a::Vector{VUNI}, b::Vector{VUNI})::Union{Nothing, Bool}
+  for (va, vb) ∈ zip(a,b)
+    for (ia, ib) in zip(va, vb)
+      if isnothing(ia) || isnothing(ib)
+        return nothing
+      elseif ia < ib
+        return true
+      elseif ib < ia
+        return false
+      end
+    end
+  end
+end
+"""
+Compute as much of the canonical data that will be ordered given a partial
+coloring of an ACSet.
+
+Given the data of a morphism f: A→B, the i'th element of f is: σᵦ(f(σₐ(i))).
+With an arbitrary partition, σₐ(i) a subset of elements in |A|. Likewise for |B|
+If the partitioning is not discrete, there will be cases where σₐ is not defined
+We put nothing in this case.
+
+If the best-case-scenario is worse than SOME automorphism's worst-case-scenario,
+then this branch can be pruned.
+"""
+function order_perms(c::StructACSet, d::CDict, symorder::Vector{Symbol}
+                    )::Pair{Vector{VUNI}, Vector{VUNI}}
+  best, worst = map(collect, zip([order_perm(c,d,s) for s in symorder]...))
+  best == worst || error("best $best worst $worst")
+  return best => worst
+end
+
+function order_perm(c::StructACSet{S}, coloring::CDict, sym::Symbol
+                    )::Pair{VUNI, VUNI} where {S}
+  ind = findfirst(==(sym), hom(S))
+  d, cd = dom(S)[ind], codom(S)[ind]
+  res = [let x=perm_best_worst(c,coloring, sym, i, d, cd);
+         isnothing(x) ? nothing=>nothing : x end for i in parts(c, cd)]
+  bst, wrst = isempty(res) ? VUNI()=>VUNI() : map(collect, zip(res...))
+  return bst => wrst
+end
+
+function perm_best_worst(c::StructACSet, coloring::CDict, f::Symbol, i::Int,
+                         dm::Symbol, cdm::Symbol)::Union{Nothing, Pair{Int,Int}}
+  σᵦinv = findall(==(i), coloring[cdm])
+  finv = Set(incident(c, σᵦinv, f))
+  σₐinv = findall(∈(finv), coloring[dm])
+  return isempty(σₐinv) ? nothing : minimum(σₐinv) => maximum(σₐinv)
+end
+
+function get_colors_by_size(coloring::CDict)::Vector{Pair{Int,Tuple{Symbol, Int}}}
+  res = []
+  for (k, v) in coloring
+    for color in 1:max0(v)
+      n_c = count(==(color), v)
+      if n_c > 1
+        # Store which table and which color
+        push!(res, n_c => (k, color))
+      end
+    end
+  end
+  return res
+end

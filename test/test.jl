@@ -102,13 +102,20 @@ set_subpart!(H, :e1, [1,1])
 set_subpart!(H, :e2, [2,2])
 test_iso(G, H, false)
 
-
-# Directed example from Hartke and Radcliffe exposition of Nauty
+# Example from Hartke and Radcliffe exposition of Nauty.
+# G is their optimal ordering. H is the original.
 G, H = Graph(9), Graph(9)
-add_edges!(G,[1,1,2,2,3,3,4,4,5,6,7,8],
-             [7,8,5,6,6,8,5,7,9,9,9,9])
-add_edges!(H,[1,1,3,3,7,7,9,9,2,4,6,8],
-             [2,4,8,6,6,2,4,8,5,5,5,5])
+add_edges!(G,[1,7,1,8,2,5,2,6,3,6,3,8,4,5,4,7,5,9,6,9,7,9,8,9],
+             [7,1,8,1,5,2,6,2,6,3,8,3,5,4,7,4,9,5,9,6,9,7,9,8])
+add_edges!(H,[1,2,1,4,3,2,3,6,7,4,7,8,9,6,9,8,2,5,4,5,6,5,8,5],
+             [2,1,4,1,2,3,6,3,4,7,8,7,6,9,8,9,5,2,5,4,5,6,5,8])
+res, tree = autos(H);
+# When branching is restricted to :V as is the case in Nauty
+# length should be 13 without auto pruning
+# length is 10 with auto pruning tactic #1
+# length is 6 with auto pruning tactic #2 too
+# However, we can branch on :E too. This leads to just length 4 soln.
+
 test_iso(G,H)
 
 """Graph corresponding to schema for finite limit sketch for categories"""
