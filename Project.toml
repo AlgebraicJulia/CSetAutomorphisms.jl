@@ -6,3 +6,7 @@ version = "0.1.0"
 [deps]
 Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
 PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
+
+[compat]
+Catlab = "0.13"
+PermutationGroups = "0.3"
