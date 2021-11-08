@@ -4,7 +4,7 @@
 
 ## Example: ACSet for chemical reactions
 
-![](MolDB.png "Schema for reactions")
+![](MolSchema.png "Schema for reactions")
 
 Note the relation between bonds and atoms is taken from [half-edge graphs](https://www.algebraicjulia.org/blog/post/2020/09/cset-graphs-2/), which encode symmetric relationships and also allow for the representation of 'dangling bonds'. This is the declaration using [Catlab.jl](https://github.com/AlgebraicJulia/Catlab.jl) (full code in `CSetAutomorphisms.jl/test/example.jl`):
 

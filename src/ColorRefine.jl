@@ -2,7 +2,10 @@ using Catlab.CategoricalAlgebra.CSets
 using Catlab.Theories
 using AutoHashEquals
 
-"""Data for an individual component (each vector corresponds to its elements)
+include(joinpath(@__DIR__, "Perms.jl"))
+
+"""
+Data for an individual component (each vector corresponds to its elements)
 1.) how many of each color (for each in-arrow) targets this point
 2.) what color this point targets (for each out arrow)
 
@@ -13,7 +16,7 @@ This could be extended to add extra automorphism-invariant properties.
   outdata::Vector{Int}
 end
 
-# Data required to color a CSet (each element of each component)
+"""Data required to color a CSet (each element of each component)"""
 const CData = Dict{Symbol, Vector{CDataPoint}}
 
 """
@@ -28,10 +31,7 @@ distinguishable.
 """
 function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
   tabs, arrs, srcs, tgts = ob(S), hom(S), dom(S), codom(S)
-  ntab = eachindex(tabs)
   res = CData()
-  a_in  = [[a for (a, tgt) in zip(arrs,tgts) if tgt==t] for t in tabs]
-  a_out = [[a for (a, src) in zip(arrs,srcs) if src==t] for t in tabs]
   for tab in tabs # compute colordata for each tab
     subres = []  # vector of data for each in-arrow
     for (arr, src, _) in filter(x->x[3]==tab, collect(zip(arrs,srcs,tgts))) # each incoming arrow
@@ -45,7 +45,8 @@ function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
 
     # Also compute per-element data for table `tgt` (now, regard as a src)
     out_subres = Vector{Int}[color[tgt][g[oga]]
-                             for (oga, src, tgt) in zip(arrs, srcs, tgts) if src==tab]
+                             for (oga, src, tgt) in zip(arrs, srcs, tgts)
+                             if src==tab]
 
     # Combine the two pieces of data for each elmeent in tgt, store in res
     res[tab] = [CDataPoint([ssr[i,:] for ssr in subres],
@@ -56,14 +57,19 @@ function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
 end
 
 
-"""    color_refine(g::CSet{CD}; init_color::Union{Nothing,CDict}=nothing)::CDict where {CD}
-
+"""
 Iterative color refinement based on the number (and identity) of incoming and
 outgoing arrows.
+Inputs:
+ - g: CSet we are color saturating
+ - init_color: initial coloring, if any (default: uniform)
+ - history: record each iteration (if true)
 """
 function color_refine(g::StructACSet{S};
-                      init_color::Union{Nothing,CDict}=nothing
-                     )::CDict where {S}
+                      init_color::Union{Nothing,CDict}=nothing,
+                      history::Bool=false
+                     )::Vector{CDict} where {S}
+  res = CDict[]
   # Default: uniform coloring
   new_color = (init_color === nothing
               ? CDict([k => ones(Int, nparts(g, k)) for k in ob(S)])
@@ -71,6 +77,9 @@ function color_refine(g::StructACSet{S};
 
   prev_n, curr_n, iter = 0, 1, 0
   while prev_n != curr_n
+    if history
+      push!(res, new_color)
+    end
     iter += 1
     prev_color = new_color
     # All that matters about newdata's type is that it is hashable
@@ -89,5 +98,6 @@ function color_refine(g::StructACSet{S};
     prev_n = sum(map(max0, values(prev_color)))
     curr_n = sum(map(max0, values(new_color)))
   end
-  return new_color
+  push!(res, new_color)
+  return res
 end
