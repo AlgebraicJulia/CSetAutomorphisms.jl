@@ -9,9 +9,17 @@ using Random
 
 include(joinpath(@__DIR__, "../src/CSetAutomorphisms.jl"))
 
+# Auxillary function tests
+##########################
 
-# Helper functions for writing tests
-####################################
+@test common([],[]) == 0
+@test common([1],Int[]) == 0
+@test common([1],Int[1]) == 1
+@test common([1],Int[1,2]) == 1
+@test common([1,2,3],Int[1,2]) == 2
+
+# Helper functions for writing automorphism tests
+#################################################
 function xs(x::Int)::Symbol
   return Symbol("x$x")
 end

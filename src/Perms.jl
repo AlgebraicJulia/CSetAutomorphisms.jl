@@ -88,9 +88,12 @@ We get a new candidate that is a refinement of a previous candidate
 
 Handle ambiguity by computing best case and worst case scenarios.
 
-A nothing means the two are not comparable. True means a<b. False means b < a.
+Returns
+ - nothing: the two are not comparable
+ - true: a < b
+ - false: b < a
 """
-VUNI = Vector{Union{Nothing, Int}}
+const VUNI = Vector{Union{Nothing, Int}}
 
 function compare_perms(a::Vector{VUNI}, b::Vector{VUNI})::Union{Nothing, Bool}
   for (va, vb) ∈ zip(a,b)
@@ -105,6 +108,7 @@ function compare_perms(a::Vector{VUNI}, b::Vector{VUNI})::Union{Nothing, Bool}
     end
   end
 end
+
 """
 Compute as much of the canonical data that will be ordered given a partial
 coloring of an ACSet.
@@ -142,6 +146,11 @@ function perm_best_worst(c::StructACSet, coloring::CDict, f::Symbol, i::Int,
   return isempty(σₐinv) ? nothing : minimum(σₐinv) => maximum(σₐinv)
 end
 
+"""
+Get vector listing nontrivial colors (which component and which color index) as
+well as how many elements have that color. E.g. for (V=[1,1,2], E=[1,2,2,2,3,3])
+we would get `[2=>(:V,1), 3=>(:E,2), 2=>(:E, 3)]`
+"""
 function get_colors_by_size(coloring::CDict)::Vector{Pair{Int,Tuple{Symbol, Int}}}
   res = []
   for (k, v) in coloring
