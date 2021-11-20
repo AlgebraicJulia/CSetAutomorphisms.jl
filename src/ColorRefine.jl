@@ -2,7 +2,6 @@ using Catlab.CategoricalAlgebra.CSets
 using Catlab.Theories
 using AutoHashEquals
 
-include(joinpath(@__DIR__, "Perms.jl"))
 
 """
 Data for an individual component (each vector corresponds to its elements)
@@ -56,6 +55,7 @@ function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
   return res
 end
 
+nocolor(g::StructACSet{S}) where {S} = CDict([k => ones(Int, nparts(g, k)) for k in ob(S)])
 
 """
 Iterative color refinement based on the number (and identity) of incoming and
@@ -64,18 +64,20 @@ Inputs:
  - g: CSet we are color saturating
  - init_color: initial coloring, if any (default: uniform)
  - history: record each iteration (if true)
+Returns:
+- trajectory of colorings
+- permutation-invariant hash value for final coloring (indicator fn)
 """
-function color_refine(g::StructACSet{S};
+function color_saturate(g::StructACSet{S};
                       init_color::Union{Nothing,CDict}=nothing,
                       history::Bool=false
-                     )::Vector{CDict} where {S}
+                     )::Pair{Vector{CDict},UInt64} where {S}
   res = CDict[]
   # Default: uniform coloring
-  new_color = (init_color === nothing
-              ? CDict([k => ones(Int, nparts(g, k)) for k in ob(S)])
-              : init_color)
+  new_color = init_color === nothing ? nocolor(g) : init_color
 
   prev_n, curr_n, iter = 0, 1, 0
+  hashes = Dict{Symbol, Vector{UInt}}()
   while prev_n != curr_n
     if history
       push!(res, new_color)
@@ -99,5 +101,6 @@ function color_refine(g::StructACSet{S};
     curr_n = sum(map(max0, values(new_color)))
   end
   push!(res, new_color)
-  return res
+  indicator = hash(Dict([k=>Set(v) for (k,v) in hashes]))
+  return res => indicator
 end

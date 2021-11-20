@@ -13,16 +13,19 @@ check_auto(x::CDict)::Bool = all(map(Base.isperm, values(x)))
 """
 Construct permutation σ⁻¹ such that σσ⁻¹=id
 """
-function invert_perm(x::CDict)::CDict
+function invert_perms(x::CDict)::CDict
   return Dict([k=>Base.invperm(v) for (k, v) in collect(x)])
+end
+
+is_perms(x::CDict)::Bool = all([Base.isperm(v) for v in values(x)])
+
+function compose_comp(xs::Vector{Int},ys::Vector{Int})::Vector{Int}
+  return [ys[xs[i]] for i in eachindex(xs)]
 end
 
 """Compose permutations"""
 function compose_perms(x::CDict, y::CDict)::CDict
-  function compose_comp(xs::Vector{Int},ys::Vector{Int})::Vector{Int}
-    return [ys[xs[i]] for i in eachindex(xs)]
-  end
-  return Dict([k => compose_comp(v1,y[k]) for (k, v1) in collect(x)])
+  Dict([k => compose_comp(v1,y[k]) for (k, v1) in collect(x)])
 end
 
 

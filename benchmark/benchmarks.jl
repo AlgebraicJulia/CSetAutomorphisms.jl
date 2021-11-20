@@ -46,7 +46,7 @@ for g in TheoryWiringDiagram.generators[:Hom]
     set_subpart!(wd, n, rand(1:sizes[cd], sizes[d]))
 end
 [copy_parts!(wd, wd) for _ in 1:3] # add 8-fold symmetry
-benchmark_crefine(bench, "color_refine_wd", color_refine(wd))
+benchmark_crefine(bench, "color_saturate_wd", color_saturate(wd))
 
 # Graphs
 #-------
@@ -55,5 +55,5 @@ g2 = path_graph(Graph, 5)
 g = Graph(1)
 [copy_parts!(g, h) for h in [g1, g2, g1, g2]]
 
-benchmark_crefine(bench, "color_refine_graph", color_refine(g))
+benchmark_crefine(bench, "color_saturate_graph", color_saturate(g))
 
