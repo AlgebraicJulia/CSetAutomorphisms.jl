@@ -2,3 +2,5 @@
 Manifest.toml
 
 .DS_Store
+
+.vscode/
