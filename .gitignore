@@ -6,3 +6,7 @@ Manifest.toml
 .vscode/
 
 .ipynb_checkpoints/
+
+benchmark/tune.json
+
+*.gz
