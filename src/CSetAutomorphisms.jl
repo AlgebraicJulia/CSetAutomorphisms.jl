@@ -1,6 +1,7 @@
 module CSetAutomorphisms
 
-export common, canonical_hash, apply_automorphism, autos, CDict, to_vizstate
+export common, canonical_hash, apply_automorphism, autos, CDict, to_vizstate,
+       color_saturate
 
 include("./Perms.jl")
 include("./ColorRefine.jl")
