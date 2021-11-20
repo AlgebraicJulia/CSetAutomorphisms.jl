@@ -4,6 +4,7 @@ authors = ["Kris Brown <ksb@stanford.edu>"]
 version = "0.1.0"
 
 [deps]
+AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
 Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
 PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
 

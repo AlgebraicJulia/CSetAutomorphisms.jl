@@ -1,5 +1,5 @@
 using Catlab.Present, Catlab.Theories, Catlab.CategoricalAlgebra
-include(joinpath(@__DIR__, "../src/CSetAutomorphisms.jl"))
+using CSetAutomorphisms
 
 @present TheoryRxn(FreeSchema) begin
   (Molecule, Atom, Bond)::Ob

@@ -4,10 +4,10 @@ using Catlab.CategoricalAlgebra
 using Catlab.Present
 using Catlab.Theories
 using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
+using CSetAutomorphisms
 
 using Random
 
-include(joinpath(@__DIR__, "../src/CSetAutomorphisms.jl"))
 
 # Auxillary function tests
 ##########################
