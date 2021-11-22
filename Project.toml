@@ -6,7 +6,10 @@ version = "0.1.0"
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
 Catlab = "134e5e36-593f-5add-ad60-77f754baafbe"
+LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Nauty = "078ca17e-7fb0-5a15-af2c-e86ea292e9a4"
 PermutationGroups = "8bc5a954-2dfc-11e9-10e6-cd969bffa420"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 Catlab = "0.13"

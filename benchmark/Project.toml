@@ -1,4 +1,5 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Nauty = "078ca17e-7fb0-5a15-af2c-e86ea292e9a4"
 PProf = "e4faabce-9ead-11e9-39d9-4379958e3056"
 PkgBenchmark = "32113eaa-f34f-5b0d-bd6c-c81e245fc73d"
