@@ -3,7 +3,8 @@ const bench = SUITE = BenchmarkGroup()
 
 using Catlab.CategoricalAlgebra, Catlab.Graphs, Catlab.WiringDiagrams
 using Catlab.WiringDiagrams.DirectedWiringDiagrams: TheoryWiringDiagram
-using Random
+using Catlab.Graphs.BasicGraphs: TheoryGraph
+using Random: rand
 using CSetAutomorphisms
 
 # Color refine benchmarks
@@ -32,10 +33,16 @@ bench["Color saturate a random wiring diagram:"] = @benchmarkable color_saturate
 
 # Graphs
 #-------
-g1 = star_graph(Graph, 5)
-g2 = path_graph(Graph, 5)
+g1 = star_graph(Graph, 4)
+g2 = path_graph(Graph, 4)
 g = Graph(1)
 [copy_parts!(g, h) for h in [g1, g2, g1, g2]]
 
 bench["Color saturate a graph:"]= @benchmarkable color_saturate(g)
 
+
+G = Graph(1)
+[copy_parts!(G, x) for x in [g1,g2]]
+canonical_hash(G); canonical_hash(G; pres=TheoryGraph)
+bench["Canonical form, nauty:"]= @benchmarkable canonical_hash(G; pres=TheoryGraph)
+bench["Canonical form, csets:"]= @benchmarkable canonical_hash(G)

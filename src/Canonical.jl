@@ -166,8 +166,10 @@ function canonical_iso(g::StructACSet{S})::StructACSet{S} where {S}
 end
 
 """Hash of canonical isomorphism."""
-function canonical_hash(g::StructACSet)::UInt64
-  return hash(string(canonical_iso(g)))
+function canonical_hash(g::StructACSet;
+                        pres::Union{Nothing,Presentation}=nothing)::UInt64
+  (isnothing(pres) ? hash(string(canonical_iso(g)))
+                   : canonical_hash_nauty(g, pres))
 end
 
 """Find index at which two vectors diverge (used in `search_tree`)"""
