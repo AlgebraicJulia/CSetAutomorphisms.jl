@@ -156,7 +156,8 @@ end
 Compute automorphisms for the pseudo-cset, but then substitute in
 the actual attribute values before evaluating the lexicographic order
 """
-function canonical_iso(g::StructACSet{S})::StructACSet{S} where {S}
+function canonical_iso(g::StructACSet{S}; pres::Union{Nothing,Presentation})::StructACSet{S} where {S}
+  if !isnothing(pres) return canonical_iso_nauty(g, pres) end
   os = order_syms(g)
   ord(x) = vcat([x[a] for a in attr(S)],[x[s] for s in os])
 
@@ -168,8 +169,7 @@ end
 """Hash of canonical isomorphism."""
 function canonical_hash(g::StructACSet;
                         pres::Union{Nothing,Presentation}=nothing)::UInt64
-  (isnothing(pres) ? hash(string(canonical_iso(g)))
-                   : canonical_hash_nauty(g, pres))
+  hash(string(canonical_iso(g; pres=pres)))
 end
 
 """Find index at which two vectors diverge (used in `search_tree`)"""

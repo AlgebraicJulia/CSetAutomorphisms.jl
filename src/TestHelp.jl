@@ -6,6 +6,8 @@ using Test
 using Catlab.CategoricalAlgebra, Catlab.Present
 using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
 
+# Functions to make schemas programmatically
+############################################
 xs(x::Int)::Symbol = Symbol("x$x")
 xs(xx::AbstractVector{Int})::Vector{Symbol} = [Symbol("x$x") for x in xx]
 es(x::Int)::Symbol = Symbol("e$x")
@@ -42,14 +44,32 @@ function init_graphs(name::Symbol, schema::StructACSet, consts::Vector{Int},
   return pres => [deepcopy(cset) for _ in 1:n]
 end
 
-  """Confirm canonical hash tracks with whether two ACSets are iso"""
+# Testing nauty.jl and CSetAutomorphisms on the same input
+##########################################################
+
+"""Confirm canonical hash tracks with whether two ACSets are iso"""
 function test_iso(a::StructACSet,b::StructACSet, pres::Union{Nothing,Presentation}=nothing)::Test.Pass
   @test a != b  # confirm they're not literally equal
   eq = is_isomorphic(a,b)
-
-  tst = a -> eq ? a : !a
+  tst = (x,y) -> eq ? x==y : x!=y # hashes should be equal iff they're iso
   if !isnothing(pres)
-    @test tst(canonical_hash(a,pres=pres) == canonical_hash(b; pres=pres))
+    println("Starting nauty test on $a")
+    @test tst(canonical_hash(a,pres=pres), canonical_hash(b; pres=pres))
+    println("finished")
   end
-  @test tst(canonical_hash(a) == canonical_hash(b))
+  @test tst(canonical_hash(a), canonical_hash(b))
 end
+
+# Particular Schemas
+####################
+@present TheoryDecGraph(FreeSchema) begin
+  E::Ob
+  V::Ob
+  src::Hom(E,V)
+  tgt::Hom(E,V)
+
+  X::AttrType
+  dec::Attr(E,X)
+end
+
+@acset_type Labeled(TheoryDecGraph)
