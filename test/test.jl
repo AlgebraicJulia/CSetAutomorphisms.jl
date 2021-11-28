@@ -84,20 +84,10 @@ catschema = @acset Graph begin
 end
 random_perm = Dict([:V=>randperm(7), :E=>randperm(17)])
 catschema2 = apply_automorphism(catschema, random_perm)
-test_iso(catschema,catschema2)
+test_iso(catschema,catschema2, TheoryGraph)
 
-# ACSet tests
-@present TheoryDecGraph(FreeSchema) begin
-  E::Ob
-  V::Ob
-  src::Hom(E,V)
-  tgt::Hom(E,V)
-
-  X::AttrType
-  dec::Attr(E,X)
-end
-
-@acset_type Labeled(TheoryDecGraph)
+# ACSet Tests
+#############
 
 G = @acset Labeled{String} begin
   V = 4
