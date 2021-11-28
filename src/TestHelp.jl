@@ -53,9 +53,7 @@ function test_iso(a::StructACSet,b::StructACSet, pres::Union{Nothing,Presentatio
   eq = is_isomorphic(a,b)
   tst = (x,y) -> eq ? x==y : x!=y # hashes should be equal iff they're iso
   if !isnothing(pres)
-    println("Starting nauty test on $a")
     @test tst(canonical_hash(a,pres=pres), canonical_hash(b; pres=pres))
-    println("finished")
   end
   @test tst(canonical_hash(a), canonical_hash(b))
 end

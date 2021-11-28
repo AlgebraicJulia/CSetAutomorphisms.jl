@@ -150,7 +150,14 @@ end
 """Convert to Nauty.jl input, then interpret result back into Catlab language"""
 function canonical_iso_nauty(g::StructACSet, p::Presentation)::StructACSet
   lgrph, lab, prt, _, _ = to_lg(g, p)
-  cf = Nauty.baked_canonical_form_color(lgrph, lab, prt).canong
+  cf = coloured_digraph_canonical_form(lgrph, lab, prt)
   return from_canong(cf, p, g)
 end
 
+"""Digraph isomorphism testing in Nauty.jl"""
+function coloured_digraph_canonical_form(g, labels, partition)
+  options = Nauty.doptionblk_mutable()
+  options.defaultptn = false
+  options.getcanon = true
+  return Nauty.densenauty(Nauty.lg_to_nauty(g), options, labels, partition).canong
+end
