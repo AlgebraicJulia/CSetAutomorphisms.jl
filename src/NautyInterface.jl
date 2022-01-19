@@ -123,7 +123,7 @@ function from_canong(g::Vector{UInt64}, p::Presentation, G::StructACSet
 
   # Each hom with the offset of its domain and codomain
   homdata = [let (hn, d, cd)=h.args;
-             (hn, [oinds[x.args[1]][1]-1 for x in [d,cd]]) end
+             (hn, [oinds[x.args[1]].start-1 for x in [d,cd]]) end
              for h in p.generators[:Hom]]
   # The ordered data for each hom
   homvals = [last.(sort([[findfirst(>(0), v) - offset for (offset, v)

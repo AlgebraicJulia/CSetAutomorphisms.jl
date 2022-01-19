@@ -1,11 +1,11 @@
 using Test
-using Catlab.Graphs
 using Catlab.CategoricalAlgebra
 using Catlab.Present
 using Catlab.Theories
 
 using CSetAutomorphisms
 using Catlab.Graphs.BasicGraphs: TheoryGraph
+using Catlab.Graphs
 
 using Random
 
@@ -23,6 +23,10 @@ using Random
 
 # Tests
 #######
+canonical_hash(Graph())
+canonical_hash(Graph(); pres=TheoryGraph)
+canonical_hash(Graph(1); pres=TheoryGraph)
+
 
 G,H = Graph(4), Graph(4);
 add_edges!(G,[1,2,4,4,3],[2,4,3,3,2]);
