@@ -9,6 +9,7 @@ Data for an individual component (each vector corresponds to its elements)
 2.) what color this point targets (for each out arrow)
 
 This could be extended to add extra automorphism-invariant properties.
+E.g. detecting if src+tgt both point to the same element
 """
 @auto_hash_equals struct CDataPoint
   indata::Vector{Vector{Int}}

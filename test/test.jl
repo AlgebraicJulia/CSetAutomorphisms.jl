@@ -1,7 +1,5 @@
 using Test
-using Catlab.CategoricalAlgebra
-using Catlab.Present
-using Catlab.Theories
+using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
 
 using CSetAutomorphisms
 using Catlab.Graphs.BasicGraphs: TheoryGraph
@@ -23,6 +21,23 @@ using Random
 
 # Tests
 #######
+@present ThTri(FreeSchema) begin
+  (V,T)::Ob
+  (x1,x2,x3)::Hom(T,V)
+end
+@acset_type Tri(ThTri)
+
+T1 = Tri()
+add_parts!(T1, :V, 2); add_parts!(T1, :T, 4)
+set_subpart!(T1, :x1, [1,2,2,1])
+set_subpart!(T1, :x2, [1,2,1,2])
+set_subpart!(T1, :x3, [1,1,2,2])
+T2 = deepcopy(T1)
+set_subpart!(T2, :x1, [2,1,1,2])
+
+test_iso(T1,T2, ThTri) # currently fails
+
+if false
 canonical_hash(Graph())
 canonical_hash(Graph(); pres=TheoryGraph)
 canonical_hash(Graph(1); pres=TheoryGraph)
@@ -159,3 +174,4 @@ H1 = @acset Labeled{String} begin
 end;
 
 test_iso(G1, H1) # label values different
+end
