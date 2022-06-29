@@ -193,7 +193,7 @@ function call_nauty(g::StructACSet)
   str = String(take!(io))
   if isempty(str)
     estr = String(take!(errio))
-    show(stdout, "text/plain",g)
+    #show(stdout, "text/plain",g)
     error(estr)
   end
   _ = [Base.parse(Int, x) for x in split(split(
