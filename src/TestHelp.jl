@@ -18,17 +18,21 @@ Create a CSet type specified by a graph
 Vertices are x₁,x₂,..., edges are e₁, e₂,...
 all edges are indexed
 """
-function graph_to_cset(grph::StructACSet, name::Symbol)::Pair{Presentation,StructACSet}
+function graph_to_cset(grph::StructACSet, name::Symbol;
+                       obs=nothing, homs=nothing
+                       )::Pair{Presentation,StructACSet}
   pres = Presentation(FreeSchema)
-  xobs = [Ob(FreeSchema,xs(i)) for i in 1:nv(grph)]
+  ixs(i) = isnothing(obs) ? xs(i) : obs[i]
+  ies(i) = isnothing(homs) ? es(i) : homs[i]
+  xobs = [Ob(FreeSchema,ixs(i)) for i in 1:nv(grph)]
   for x in xobs
     add_generator!(pres, x)
   end
   for (i,(src, tgt)) in enumerate(zip(grph[:src], grph[:tgt]))
-    add_generator!(pres, Hom(es(i), xobs[src], xobs[tgt]))
+    add_generator!(pres, Hom(ies(i), xobs[src], xobs[tgt]))
   end
 
-  expr = struct_acset(name, StructACSet, pres, index=es(1:ne(grph)))
+  expr = struct_acset(name, StructACSet, pres, index=ies(1:ne(grph)))
   eval(expr)
   csettype = eval(name)
   return pres => Base.invokelatest(csettype)
@@ -48,14 +52,14 @@ end
 ##########################################################
 
 """Confirm canonical hash tracks with whether two ACSets are iso"""
-function test_iso(a::StructACSet,b::StructACSet, pres::Union{Nothing,Presentation}=nothing)::Test.Pass
+function test_iso(a::StructACSet, b::StructACSet)::Test.Pass
   @test a != b  # confirm they're not literally equal
   eq = is_isomorphic(a,b)
   tst = (x,y) -> eq ? x==y : x!=y # hashes should be equal iff they're iso
-  if !isnothing(pres)
-    @test tst(canonical_hash(a,pres=pres), canonical_hash(b; pres=pres))
-  end
+  println("testing julia")
   @test tst(canonical_hash(a), canonical_hash(b))
+  println("testing py")
+  @test tst(call_nauty(a), call_nauty(b))
 end
 
 # Particular Schemas

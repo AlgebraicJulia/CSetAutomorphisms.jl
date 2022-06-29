@@ -58,3 +58,6 @@ println(r1 == r2) # false
 println(is_isomorphic(r1, r2)) # true
 ```
 This should convince you that the 'right' thing to do is work with `Rxn`s only up to isomorphism. While Catlab's `is_isomorphic` allows us to test whether any *pair* of ACSets is equivalent up to isomorphism (at nontrivial cost), it does not give a concrete value that represents all ACSets in its isomorphism class. One example why this may be useful: a scientist may require a canonical labeling in order to query a large database of `N` reactions and see if a particular reaction, `R`, is in the database (without having to run the expensive `is_isomorphic` function `O(N)` times). If `N` is large, then it is much preferable to compute the canonical labeling for `R` just once and do `O(N)` string equality tests.
+
+## Update
+An upcoming refactor of Catlab using [CompTime.jl](https://github.com/olynch/CompTime.jl) will make it feasible to reimplement the core algorithm using code custom generated for a given C-Set, offering new opportunities for performance improvements.
