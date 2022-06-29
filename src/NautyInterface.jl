@@ -33,17 +33,15 @@ For example, the multi-digraph V₁ ⟶ V₂ is translated to the vertex-labeled
 digraph: V₁ <- src -- E₁ -- tgt -> V₂, where the V's have the same color, all
 src nodes have the same color, etc.
 """
-function to_lg(g::StructACSet, p::Presentation
-  )::Tuple{lg.DiGraph, Vector{Int32}, Vector{Int32},
-           Dict{Symbol, UnitRange}, Dict{Symbol, Vector{Any}}}
+function to_lg(g::StructACSet, p::Presentation)
   colors, curr, oinds = Any[], 1, Dict{Symbol}{UnitRange}()
-  lgr = lg.DiGraph(sum(g.obs))
+  lgr = lg.DiGraph{Int}(sum(g.obs))
 
   # Handle Ob
   for o in [g.args[1] for g in p.generators[:Ob]]
-  append!(colors, repeat([o], nparts(g, o)))
-  oinds[o] = curr:length(colors)
-  curr = length(colors) + 1
+    append!(colors, repeat([o], nparts(g, o)))
+    oinds[o] = curr:length(colors)
+    curr = length(colors) + 1
   end
 
   # Handle Hom
@@ -85,6 +83,7 @@ function to_lg(g::StructACSet, p::Presentation
   end
 
   # Handle Attr
+  attr_colors = length(colors)+1
   for h in p.generators[:Attr]
     attr_name, d_, cd_  = h.args
     dom_,codom_ = [d_.args[1], cd_.args[1]]
@@ -110,7 +109,7 @@ function to_lg(g::StructACSet, p::Presentation
   # Encode that a partition ends with a '0'
   partition = vcat([begin z[end]=0; z end
                     for z in ones.(Cint,size.(colorsarray))]...)
-  return (lgr, labels, partition, oinds, attrvals)
+  return (lgr, labels, partition, oinds, attrvals, colorsarray, attr_colors)
 end
 
 """
@@ -123,7 +122,7 @@ function from_canong(g::Vector{UInt64}, p::Presentation, G::StructACSet
 
   # Each hom with the offset of its domain and codomain
   homdata = [let (hn, d, cd)=h.args;
-             (hn, [oinds[x.args[1]][1]-1 for x in [d,cd]]) end
+             (hn, [oinds[x.args[1]].start-1 for x in [d,cd]]) end
              for h in p.generators[:Hom]]
   # The ordered data for each hom
   homvals = [last.(sort([[findfirst(>(0), v) - offset for (offset, v)
@@ -150,8 +149,16 @@ end
 """Convert to Nauty.jl input, then interpret result back into Catlab language"""
 function canonical_iso_nauty(g::StructACSet, p::Presentation)::StructACSet
   lgrph, lab, prt, _, _ = to_lg(g, p)
-  cf = coloured_digraph_canonical_form(lgrph, lab, prt)
-  return from_canong(cf, p, g)
+  # println("Calling nauty with graph of order $(lg.nv(lgrph))")
+  if false #lg.nv(lgrph) > 64
+    # println("slow canonical iso")
+    res =  canonical_iso(g)
+    # println("done")
+    return res
+  else
+    cf = coloured_digraph_canonical_form(lgrph, lab, prt)
+    return from_canong(cf, p, g)
+  end
 end
 
 """Digraph isomorphism testing in Nauty.jl"""
@@ -160,4 +167,41 @@ function coloured_digraph_canonical_form(g, labels, partition)
   options.defaultptn = false
   options.getcanon = true
   return Nauty.densenauty(Nauty.lg_to_nauty(g), options, labels, partition).canong
+end
+
+
+
+function dreadnaut_input(g::StructACSet)
+  p = Presentation(g)
+  lgr, _, _, _, _, colorsarray, ac = to_lg(g, p)
+  m = lg.adjacency_matrix(lgr)
+  join(["n=$(lg.nv(lgr)) g",
+        join(map(1:size(m)[1]) do r
+          join(string.((x->x-1).(findall(==(1),m[r,:]))) ," ")
+        end, ";"),
+        ". f = [$(join([join(c.-1, ",") for c in colorsarray],"|"))]",
+        "c d x b z"], " ")
+end
+
+function call_nauty(g::StructACSet)
+  f = tempname()
+  write(f, dreadnaut_input(g))
+  io,errio = IOBuffer(), IOBuffer()
+  cmd = pipeline(`cat $f`, `dreadnaut`)
+  cmd2 = pipeline(cmd; stdout=io, stderr=errio)
+  run(cmd2)
+  str = String(take!(io))
+  if isempty(str)
+    estr = String(take!(errio))
+    #show(stdout, "text/plain",g)
+    error(estr)
+  end
+  _ = [Base.parse(Int, x) for x in split(split(
+    str[findfirst("seconds", str)[1]:end],"\n")[2], " ")[2:end]]
+  # Parsing the canonical graph
+  # canong = map(split(str[findfirst("0 :", str)[1]:end],"\n")) do l
+  #   es = last(split(l, ":"))[1:end-1]
+  #   [parse(Int, x) for x in filter(x->!isempty(x), split(es, " "))]
+  # end
+  split(str, "\n")[end-1]
 end

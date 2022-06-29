@@ -142,7 +142,11 @@ function canonical_iso(g::StructCSet{S})::StructCSet{S} where {S}
   os = order_syms(g)
   opt = sort(collect(autos(g)[1]), by=(γ->order_perms(g, γ, os)))
   ord(x) = [x[s] for s in os]
-  isos = sort([apply_automorphism(g, Dict(a)) for a in autos(g)[1]], by=ord)
+  applied = [apply_automorphism(g, Dict(a)) for a in autos(g)[1]]
+  for a in applied
+    is_isomorphic(a, g) || error("BAD AUTO FOUND")
+  end
+  isos = sort(applied, by=ord)
   return isempty(isos) ? g : isos[1]
 end
 
@@ -156,7 +160,8 @@ end
 Compute automorphisms for the pseudo-cset, but then substitute in
 the actual attribute values before evaluating the lexicographic order
 """
-function canonical_iso(g::StructACSet{S}; pres::Union{Nothing,Presentation})::StructACSet{S} where {S}
+function canonical_iso(g::StructACSet{S}; pres::Union{Nothing,Presentation}
+                      )::StructACSet{S} where {S}
   if !isnothing(pres) return canonical_iso_nauty(g, pres) end
   os = order_syms(g)
   ord(x) = vcat([x[a] for a in attr(S)],[x[s] for s in os])
@@ -271,7 +276,7 @@ end
 
 """To reduce branching factor, split on the SMALLEST nontrivial partition"""
 function split_data(coloring::CDict)::Tuple{Symbol, Int, Vector{Int}}
-  colors_by_size = sort(get_colors_by_size(coloring), rev=true)
+  colors_by_size = sort(get_colors_by_size(coloring), rev=false)
   if isempty(colors_by_size)
     return :_nothing, 0, []
   end
@@ -317,7 +322,7 @@ function search_tree!(g::StructACSet{S},
                       history::Vector{History}=History[],
                       auto_prune::Bool=true,
                       orbit_prune::Bool=true,
-                      order_prune::Bool=true,
+                      order_prune::Bool=false,
                      )::Nothing where {S}
   # Perform color saturation
   color_seq, new_ind = color_saturate(g; init_color=init_coloring, history=!isempty(history))
@@ -428,7 +433,7 @@ function autos(g::StructACSet;
                history::Bool=false,
                auto_prune::Bool=true,
                orbit_prune::Bool=true,
-               order_prune::Bool=true)::Tuple{Set{CDict},Tree, Vector{History}}
+               order_prune::Bool=false)::Tuple{Set{CDict},Tree, Vector{History}}
   tree, leafnodes = Tree(), Set{VPSI}()
   hist = history ? [History("start", g)] : History[]
   search_tree!(g, nocolor(g), VPSI(), tree, leafnodes,Indicator(),Set{VPSI}();

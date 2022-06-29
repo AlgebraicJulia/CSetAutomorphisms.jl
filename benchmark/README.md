@@ -12,5 +12,5 @@ To run a specific set of benchmarks, use the `script` keyword argument, for
 example:
 
 ``` julia
-benchmarkpkg(CSetAutomorphisms; script="benchmark/ColorRefine.jl")
+benchmarkpkg(CSetAutomorphisms; script="benchmark/benchmarks.jl")
 ```

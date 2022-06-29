@@ -1,13 +1,13 @@
 using Test
-using Catlab.Graphs
-using Catlab.CategoricalAlgebra
-using Catlab.Present
-using Catlab.Theories
-
+using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
+using Revise
 using CSetAutomorphisms
 using Catlab.Graphs.BasicGraphs: TheoryGraph
+using Catlab.Graphs
 
 using Random
+
+
 
 # Auxillary function tests
 ##########################
@@ -23,31 +23,63 @@ using Random
 
 # Tests
 #######
+@present ThTri(FreeSchema) begin
+  (V,T)::Ob
+  (x1,x2,x3)::Hom(T,V)
+end
+@acset_type Tri(ThTri)
+
+T1 = Tri()
+add_parts!(T1, :V, 2); add_parts!(T1, :T, 4)
+set_subpart!(T1, :x1, [1,2,2,1])
+set_subpart!(T1, :x2, [1,2,1,2])
+set_subpart!(T1, :x3, [1,1,2,2])
+T2 = deepcopy(T1)
+set_subpart!(T2, :x1, [2,1,1,2])
+
+test_iso(T1,T2)
+
+canonical_hash(Graph())
+canonical_hash(Graph(1))
+
 
 G,H = Graph(4), Graph(4);
 add_edges!(G,[1,2,4,4,3],[2,4,3,3,2]);
 add_edges!(H,[2,3,1,4,4],[1,1,4,3,3]);
-test_iso(G,H, TheoryGraph) # 196 automorphisms
+test_iso(G,H) # 196 automorphisms
 
 Triangle = Graph(3) # f;g = h
 add_edges!(Triangle, [1,1,2], [2,3,3]) # f,h,g
 
-Tri_, (G,H) = init_graphs(:Tri, Triangle,[2,2,2])
+Tri_, (G,H) = init_graphs(:Triang, Triangle,[2,2,2])
 for i in 1:3 set_subpart!(G, Symbol("e$i"), [1,1]) end
 for i in 1:3 set_subpart!(H, Symbol("e$i"), [2,2]) end
-test_iso(G, H, Tri_)
+test_iso(G, H)
 
 Loop = Graph(1)
 add_edge!(Loop, 1, 1)
 Loo_, (G, H) = init_graphs(:Loo, Loop, [3])
 set_subpart!(G, Symbol("e1"), [3,2,1])
 set_subpart!(H, Symbol("e1"), [1,3,2])
-test_iso(G, H, Loo_)
+test_iso(G, H)
 
 cyclel, cycler = Graph(3), Graph(3)
 add_edges!(cyclel,[1,2,3],[2,3,1])
 add_edges!(cycler,[3,2,1],[2,1,3])
-test_iso(cyclel, cycler, TheoryGraph)
+test_iso(cyclel, cycler)
+println("CYCLES")
+n = 10
+c1 = cycle_graph(Graph, 3*n)
+pn = path_graph(Graph, n)
+c2 = pn ⊕ pn ⊕ pn
+add_edge!(c2, n, 2*n+1)
+add_edge!(c2, 2*n, 1)
+add_edge!(c2, 3*n, n+1)
+
+test_iso(c1, c2)
+println("DONE")
+
+
 
 Loop2 = Graph(1)
 add_edges!(Loop2, [1,1],[1,1])
@@ -57,7 +89,7 @@ set_subpart!(G, :e1, [2,1])
 set_subpart!(G, :e2, [2,1])
 set_subpart!(H, :e1, [1,1])
 set_subpart!(H, :e2, [2,2])
-test_iso(G, H, Loo2_)
+test_iso(G, H)
 
 # Example from Hartke and Radcliffe exposition of Nauty.
 # G is their optimal ordering. H is the original.
@@ -84,11 +116,12 @@ catschema = @acset Graph begin
 end
 random_perm = Dict([:V=>randperm(7), :E=>randperm(17)])
 catschema2 = apply_automorphism(catschema, random_perm)
-test_iso(catschema,catschema2, TheoryGraph)
+test_iso(catschema,catschema2)
+
 
 # ACSet Tests
 #############
-
+if false
 G = @acset Labeled{String} begin
   V = 4
   E = 4
@@ -106,7 +139,7 @@ H = @acset Labeled{String} begin
   dec = ["a","b","c","d"]
 end;
 
-test_iso(G, H, TheoryDecGraph) # vertices permuted
+test_iso(G, H) # vertices permuted
 
 I = @acset Labeled{String} begin
 V = 4
@@ -116,7 +149,7 @@ tgt = [2,3,4,1]
 dec = ["b","c","d","a"]
 end;
 
-test_iso(G, I, TheoryDecGraph) # labels permuted
+test_iso(G, I) # labels permuted
 
 N = @acset Labeled{String} begin
   V = 4
@@ -155,3 +188,4 @@ H1 = @acset Labeled{String} begin
 end;
 
 test_iso(G1, H1) # label values different
+end
