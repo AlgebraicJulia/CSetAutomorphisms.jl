@@ -56,10 +56,10 @@ function test_iso(a::StructACSet, b::StructACSet)::Test.Pass
   @test a != b  # confirm they're not literally equal
   eq = is_isomorphic(a,b)
   tst = (x,y) -> eq ? x==y : x!=y # hashes should be equal iff they're iso
-  println("testing julia")
   @test tst(canonical_hash(a), canonical_hash(b))
-  println("testing py")
-  @test tst(call_nauty(a), call_nauty(b))
+  na = call_nauty(a)
+  nb = call_nauty(b)
+  @test tst(na, nb)
 end
 
 # Particular Schemas

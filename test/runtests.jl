@@ -1,8 +1,7 @@
 using Test
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
-using Revise
+# using Revise
 using CSetAutomorphisms
-using Catlab.Graphs.BasicGraphs: TheoryGraph
 using Catlab.Graphs
 
 using Random
@@ -29,11 +28,9 @@ using Random
 end
 @acset_type Tri(ThTri)
 
-T1 = Tri()
-add_parts!(T1, :V, 2); add_parts!(T1, :T, 4)
-set_subpart!(T1, :x1, [1,2,2,1])
-set_subpart!(T1, :x2, [1,2,1,2])
-set_subpart!(T1, :x3, [1,1,2,2])
+T1 = @acset Tri begin
+  V=2; T=4;x1=[1,2,2,1];x2=[1,2,1,2];x3=[1,1,2,2]
+end
 T2 = deepcopy(T1)
 set_subpart!(T2, :x1, [2,1,1,2])
 
@@ -67,7 +64,7 @@ cyclel, cycler = Graph(3), Graph(3)
 add_edges!(cyclel,[1,2,3],[2,3,1])
 add_edges!(cycler,[3,2,1],[2,1,3])
 test_iso(cyclel, cycler)
-println("CYCLES")
+
 n = 10
 c1 = cycle_graph(Graph, 3*n)
 pn = path_graph(Graph, n)
@@ -77,8 +74,6 @@ add_edge!(c2, 2*n, 1)
 add_edge!(c2, 3*n, n+1)
 
 test_iso(c1, c2)
-println("DONE")
-
 
 
 Loop2 = Graph(1)

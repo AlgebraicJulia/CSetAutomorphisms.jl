@@ -10,3 +10,5 @@ Manifest.toml
 benchmark/tune.json
 
 *.gz
+
+lcov.info

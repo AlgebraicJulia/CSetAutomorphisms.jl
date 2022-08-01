@@ -3,7 +3,7 @@ const bench = SUITE = BenchmarkGroup()
 
 using Catlab.CategoricalAlgebra, Catlab.Graphs, Catlab.WiringDiagrams
 using Catlab.WiringDiagrams.DirectedWiringDiagrams: TheoryWiringDiagram
-using Catlab.Graphs.BasicGraphs: TheoryGraph
+using Catlab.Graphs
 using Catlab.Theories
 using Random: rand
 using CSetAutomorphisms
