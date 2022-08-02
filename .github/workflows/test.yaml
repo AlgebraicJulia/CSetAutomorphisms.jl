@@ -17,5 +17,7 @@ jobs:
         uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.julia-version }}
+      - name: "Build deps"
+        uses: julia-actions/julia-buildpkg@master
       - name: "Run tests"
         uses: julia-actions/julia-runtest@master
