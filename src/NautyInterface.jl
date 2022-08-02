@@ -129,6 +129,7 @@ bashit(str) = run(`bash -c "$str"`)
 function call_nauty(g::StructACSet)::String
   inp = dreadnaut_input(g)
   tmp = tempname()
+  dreadpth = joinpath(@__DIR__, "../deps/nauty27r3/dreadnaut")
   cmd = "echo \"$inp\" | dreadnaut | tail -n 1 > $tmp"
   bashit(cmd)
   res = open(f->read(f, String), tmp)
