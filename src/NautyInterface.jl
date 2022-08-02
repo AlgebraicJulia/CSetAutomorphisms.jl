@@ -1,5 +1,4 @@
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
-using Nauty
 import LightGraphs
 const lg = LightGraphs
 using DataStructures: OrderedSet
@@ -112,64 +111,6 @@ function to_lg(g::StructACSet, p::Presentation)
   return (lgr, labels, partition, oinds, attrvals, colorsarray, attr_colors)
 end
 
-"""
-Get canonical ACSet from Nauty's canong output
-"""
-function from_canong(g::Vector{UInt64}, p::Presentation, G::StructACSet
-                    )::StructACSet
-  _, _, _, oinds, attrdict = to_lg(G,p)
-  gadj = Nauty.label_to_adj(g)
-
-  # Each hom with the offset of its domain and codomain
-  homdata = [let (hn, d, cd)=h.args;
-             (hn, [oinds[x.args[1]].start-1 for x in [d,cd]]) end
-             for h in p.generators[:Hom]]
-  # The ordered data for each hom
-  homvals = [last.(sort([[findfirst(>(0), v) - offset for (offset, v)
-          in zip(offsets, [gadj[:,i], gadj[i,:]])]
-          for i in oinds[h]])) for (h,offsets) in homdata]
-  # Each attr with the offset of its domain and codomain
-  attrdata = [let (hn, d, cd)=h.args;
-             (hn, cd.args[1], oinds[x.args[1]][1]-1 for x in [d,cd]) end
-             for h in p.generators[:Attr]]
-  # The ordered data for each attr
-  attrvals = [last.(sort([[findfirst(>(0), v) - offset for (offset, v)
-              in zip(offsets, [gadj[:,i], gadj[i,:]])]
-              for i in oinds[h]])) for (h,_,offsets) in attrdata]
-  I = deepcopy(G)
-  for (h, vs) in zip(first.(homdata), homvals)
-    set_subpart!(I, h, vs)
-  end
-  for ((h,cd), vs) in zip(attrdata, attrvals)
-    set_subpart!(I, h, [attrdict[cd][v] for v in vs])
-  end
-  return I
-end
-
-"""Convert to Nauty.jl input, then interpret result back into Catlab language"""
-function canonical_iso_nauty(g::StructACSet, p::Presentation)::StructACSet
-  lgrph, lab, prt, _, _ = to_lg(g, p)
-  # println("Calling nauty with graph of order $(lg.nv(lgrph))")
-  if false #lg.nv(lgrph) > 64
-    # println("slow canonical iso")
-    res =  canonical_iso(g)
-    # println("done")
-    return res
-  else
-    cf = coloured_digraph_canonical_form(lgrph, lab, prt)
-    return from_canong(cf, p, g)
-  end
-end
-
-"""Digraph isomorphism testing in Nauty.jl"""
-function coloured_digraph_canonical_form(g, labels, partition)
-  options = Nauty.doptionblk_mutable()
-  options.defaultptn = false
-  options.getcanon = true
-  return Nauty.densenauty(Nauty.lg_to_nauty(g), options, labels, partition).canong
-end
-
-
 
 function dreadnaut_input(g::StructACSet)
   p = Presentation(g)
@@ -183,25 +124,14 @@ function dreadnaut_input(g::StructACSet)
         "c d x b z"], " ")
 end
 
-function call_nauty(g::StructACSet)
-  f = tempname()
-  write(f, dreadnaut_input(g))
-  io,errio = IOBuffer(), IOBuffer()
-  cmd = pipeline(`cat $f`, `dreadnaut`)
-  cmd2 = pipeline(cmd; stdout=io, stderr=errio)
-  run(cmd2)
-  str = String(take!(io))
-  if isempty(str)
-    estr = String(take!(errio))
-    #show(stdout, "text/plain",g)
-    error(estr)
-  end
-  _ = [Base.parse(Int, x) for x in split(split(
-    str[findfirst("seconds", str)[1]:end],"\n")[2], " ")[2:end]]
-  # Parsing the canonical graph
-  # canong = map(split(str[findfirst("0 :", str)[1]:end],"\n")) do l
-  #   es = last(split(l, ":"))[1:end-1]
-  #   [parse(Int, x) for x in filter(x->!isempty(x), split(es, " "))]
-  # end
-  split(str, "\n")[end-1]
+bashit(str) = run(`bash -c "$str"`)
+
+function call_nauty(g::StructACSet)::String
+  inp = dreadnaut_input(g)
+  tmp = tempname()
+  dreadpth = joinpath(@__DIR__, "../deps/nauty27r3/dreadnaut")
+  cmd = "echo \"$inp\" | $dreadpth | tail -n 1 > $tmp"
+  bashit(cmd)
+  res = open(f->read(f, String), tmp)
+  return res
 end
