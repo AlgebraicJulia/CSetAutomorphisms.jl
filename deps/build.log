@@ -1,0 +1,258 @@
+checking build system type... x86_64-apple-darwin21.4.0
+checking host system type... x86_64-apple-darwin21.4.0
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to enable C11 features... none needed
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+checking if gcc supports -O4 -Werror flags... no
+checking if gcc supports -O3 flags... yes
+checking for sys/wait.h that is POSIX.1 compatible... yes
+checking for stdio.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
+checking for unistd.h... yes
+checking for vfork.h... no
+checking for signal.h... yes
+checking for stddef.h... yes
+checking for unistd.h... (cached) yes
+checking for sys/types.h... (cached) yes
+checking for sys/wait.h... (cached) yes
+checking for stdlib.h... (cached) yes
+checking for string.h... (cached) yes
+checking for errno.h... yes
+checking for limits.h... yes
+checking for stdint.h... (cached) yes
+checking for pid_t... yes
+checking for gcc options needed to detect all undeclared functions... none needed
+checking whether ftell is declared... yes
+checking whether popen is declared... yes
+checking whether fdopen is declared... yes
+checking whether putenv is declared... yes
+checking whether setenv is declared... yes
+checking whether malloc is declared... yes
+checking how to run the C preprocessor... gcc -E
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking if compiler accepts flexible array members... 1
+checking if INFINITY is declared in math.h... 1
+checking size of int... 4
+checking size of long... 8
+checking size of long long... 8
+checking size of void*... 8
+checking size of __int128... 16
+checking size of __int128_t... 16
+checking for isatty... yes
+checking for time... yes
+checking for gettimeofday... yes
+checking for times... yes
+checking for getrusage... yes
+checking for perror... yes
+checking for pipe... yes
+checking for wait... yes
+checking for popen... yes
+checking for putenv... yes
+checking for setenv... yes
+checking for fork... yes
+checking for vfork... yes
+checking for working fork... yes
+checking for working vfork... (cached) yes
+checking for fseeko... yes
+checking for sigaction... yes
+checking for sigprocmask... yes
+checking if popcnt instruction is available and requested... 1
+checking if __builtin_popcount() is supported... 1
+checking if __builtin_popcountl() is supported... 1
+checking if __builtin_popcountll() is supported... 1
+checking if gcc supports -march=native... yes
+CC=gcc
+CFLAGS= -O3
+MORECFLAGS= -mpopcnt -march=native
+checking if lzcnt instruction is available and requested... 1
+checking if __builtin_clz() is supported... 1
+checking if __builtin_clzl() is supported... 1
+checking if __builtin_clzll() is supported... 1
+checking for getc_unlocked... yes
+checking for flockfile... yes
+checking for thread local storage (TLS) class... _Thread_local
+checking for gsort... gsort
+checking if sort supports the -k switch... 1
+checking for a race-free mkdir -p... /usr/local/bin/gmkdir -p
+checking for a BSD-compatible install... /usr/local/bin/ginstall -c
+configure: creating ./config.status
+config.status: creating makefile
+config.status: creating nauty.h
+config.status: creating naututil.h
+config.status: creating gtools.h
+config.status: creating nauty.pc
+gcc -c -O3  -mpopcnt -march=native -o naututil.o naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinv.o nautinv.c
+gcc -c -O3  -mpopcnt -march=native -o traces.o traces.c
+gcc -c -O3  -mpopcnt -march=native -o gtools.o gtools.c
+gcc -c -O3  -mpopcnt -march=native -o nauty.o nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautil.o nautil.c
+gcc -c -O3  -mpopcnt -march=native -o nausparse.o nausparse.c
+gcc -c -O3  -mpopcnt -march=native -o naugraph.o naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o schreier.o schreier.c
+gcc -c -O3  -mpopcnt -march=native -o naurng.o naurng.c
+gcc -c -O3  -mpopcnt -march=native -o gutil1.o gutil1.c
+gcc -c -O3  -mpopcnt -march=native -o gutil2.o gutil2.c
+gcc -c -O3  -mpopcnt -march=native -o gtnauty.o gtnauty.c
+gcc -c -O3  -mpopcnt -march=native -o naugroup.o naugroup.c
+gcc -c -O3  -mpopcnt -march=native -o nautycliquer.o nautycliquer.c
+gcc -c -O3  -mpopcnt -march=native -o nauty1.o -DMAXN=WORDSIZE nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautil1.o -DMAXN=WORDSIZE nautil.c
+gcc -c -O3  -mpopcnt -march=native -o naugraph1.o -DMAXN=WORDSIZE naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o naututil1.o -DMAXN=WORDSIZE naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinv1.o -DMAXN=WORDSIZE nautinv.c
+gcc -c -O3  -mpopcnt -march=native -o nautyW.o -DWORDSIZE=32 nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautilW.o -DWORDSIZE=32 nautil.c
+gcc -c -O3  -mpopcnt -march=native -o nausparseW.o -DWORDSIZE=32 nausparse.c
+gcc -c -O3  -mpopcnt -march=native -o naugraphW.o -DWORDSIZE=32 naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o schreierW.o -DWORDSIZE=32 schreier.c
+gcc -c -O3  -mpopcnt -march=native -o gtoolsW.o -DWORDSIZE=32 gtools.c
+gcc -c -O3  -mpopcnt -march=native -o naututilW.o -DWORDSIZE=32 naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinvW.o -DWORDSIZE=32 nautinv.c 
+gcc -c -O3  -mpopcnt -march=native -o gutil1W.o -DWORDSIZE=32 gutil1.c
+gcc -c -O3  -mpopcnt -march=native -o gutil2W.o -DWORDSIZE=32 gutil2.c
+gcc -c -O3  -mpopcnt -march=native -o gtnautyW.o -DWORDSIZE=32 gtnauty.c
+gcc -c -O3  -mpopcnt -march=native -o naugroupW.o -DWORDSIZE=32 naugroup.c
+gcc -c -O3  -mpopcnt -march=native -o nautycliquerW.o -DWORDSIZE=32 nautycliquer.c
+gcc -c -O3  -mpopcnt -march=native -o nautyW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautilW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 nautil.c
+gcc -c -O3  -mpopcnt -march=native -o naugraphW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o naututilW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinvW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 nautinv.c
+gcc -c -O3  -mpopcnt -march=native -o gutil1W1.o -DMAXN=WORDSIZE -DWORDSIZE=32 gutil1.c
+gcc -c -O3  -mpopcnt -march=native -o gutil2W1.o -DMAXN=WORDSIZE -DWORDSIZE=32 gutil2.c
+gcc -c -O3  -mpopcnt -march=native -o gtnautyW1.o -DMAXN=WORDSIZE -DWORDSIZE=32 gtnauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautyL.o -DWORDSIZE=64 nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautilL.o -DWORDSIZE=64 nautil.c
+gcc -c -O3  -mpopcnt -march=native -o nausparseL.o -DWORDSIZE=64 nausparse.c
+gcc -c -O3  -mpopcnt -march=native -o naugraphL.o -DWORDSIZE=64 naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o schreierL.o -DWORDSIZE=64 schreier.c
+gcc -c -O3  -mpopcnt -march=native -o gtoolsL.o -DWORDSIZE=64 gtools.c
+gcc -c -O3  -mpopcnt -march=native -o naututilL.o -DWORDSIZE=64 naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinvL.o -DWORDSIZE=64 nautinv.c
+gcc -c -O3  -mpopcnt -march=native -o gutil1L.o -DWORDSIZE=64 gutil1.c
+gcc -c -O3  -mpopcnt -march=native -o gutil2L.o -DWORDSIZE=64 gutil2.c
+gcc -c -O3  -mpopcnt -march=native -o gtnautyL.o -DWORDSIZE=64 gtnauty.c
+gcc -c -O3  -mpopcnt -march=native -o naugroupL.o -DWORDSIZE=64 naugroup.c
+gcc -c -O3  -mpopcnt -march=native -o nautycliquerL.o -DWORDSIZE=64 nautycliquer.c
+gcc -c -O3  -mpopcnt -march=native -o nautyL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 nauty.c
+gcc -c -O3  -mpopcnt -march=native -o nautilL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 nautil.c
+gcc -c -O3  -mpopcnt -march=native -o naugraphL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 naugraph.c
+gcc -c -O3  -mpopcnt -march=native -o naututilL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 naututil.c
+gcc -c -O3  -mpopcnt -march=native -o nautinvL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 nautinv.c
+gcc -c -O3  -mpopcnt -march=native -o gutil1L1.o -DMAXN=WORDSIZE -DWORDSIZE=64 gutil1.c
+gcc -c -O3  -mpopcnt -march=native -o gutil2L1.o -DMAXN=WORDSIZE -DWORDSIZE=64 gutil2.c
+gcc -c -O3  -mpopcnt -march=native -o gtnautyL1.o -DMAXN=WORDSIZE -DWORDSIZE=64 gtnauty.c
+gcc -o copyg -O3  -mpopcnt -march=native copyg.c gtools.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o listg -O3  -mpopcnt -march=native listg.c gtools.o nautil.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o labelg -O3 labelg.c gtools.o gtnauty.o naututil.o \
+	    nautinv.o gutil2.o traces.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o dretog -O3  -mpopcnt -march=native dretog.c naututil.o gtools.o \
+	    nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o amtog -O3  -mpopcnt -march=native amtog.c gtools.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o geng -O3  -mpopcnt -march=native -DMAXN=WORDSIZE -DWORDSIZE=32 geng.c gtoolsW.o nautyW1.o \
+		nautilW1.o naugraphW1.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o complg -O3  -mpopcnt -march=native complg.c gtools.o gtnauty.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o NRswitchg -O3  -mpopcnt -march=native NRswitchg.c gtools.o gtnauty.o \
+		 nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o biplabg -O3  -mpopcnt -march=native biplabg.c \
+		gtools.o gutil1.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o addedgeg -O3  -mpopcnt -march=native addedgeg.c gtools.o gtnauty.o \
+	        gutil1.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o deledgeg -O3  -mpopcnt -march=native deledgeg.c gtools.o gtnauty.o \
+		 nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o countg -O3 testg.c gtools.o gtnauty.o gutil1.o \
+	         gutil2.o nautinv.o nautycliquer.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib  
+gcc -o pickg -O3 testg.c gtools.o gtnauty.o gutil1.o \
+	        gutil2.o nautinv.o nautycliquer.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o genrang -O3  -mpopcnt -march=native genrang.c \
+		gtools.o naututil.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o newedgeg -O3  -mpopcnt -march=native newedgeg.c gtools.o gtnauty.o \
+		 nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o catg -O3  -mpopcnt -march=native catg.c gtools.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o genbg -O3  -mpopcnt -march=native -DMAXN=WORDSIZE -DWORDSIZE=32 genbg.c gtoolsW.o schreierW.o \
+		nautyW1.o nautilW1.o naugraphW1.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o directg -O3  -mpopcnt -march=native directg.c gtools.o \
+                nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o naugroup.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o gentreeg -O3  -mpopcnt -march=native gentreeg.c gtools.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o genquarticg -O3  -mpopcnt -march=native genquarticg.c gtoolsL.o nautyL1.o \
+		nautilL1.o naugraphL1.o schreierL.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o underlyingg -O3  -mpopcnt -march=native underlyingg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o assembleg -O3  -mpopcnt -march=native assembleg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o gengL -O3  -mpopcnt -march=native -DMAXN=WORDSIZE -DWORDSIZE=64 geng.c gtoolsL.o nautyL1.o \
+		nautilL1.o naugraphL1.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o ranlabg -O3  -mpopcnt -march=native ranlabg.c gtools.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o multig -O3  -mpopcnt -march=native multig.c gtools.o gtnauty.o \
+                nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o naugroup.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o planarg -O3  -mpopcnt -march=native \
+		planarg.c planarity.c gtools.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o gentourng -O3  -mpopcnt -march=native -DMAXN=24 -DWORDSIZE=32 gentourng.c gtoolsW.o nautyW1.o \
+		nautilW1.o naugraphW1.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o linegraphg -O3  -mpopcnt -march=native linegraphg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o watercluster2 -O3  -mpopcnt -march=native -DMAXN=WORDSIZE -DWORDSIZE=32 watercluster2.c \
+                 gtoolsW.o nautyW1.o nautilW1.o nausparseW.o naugraphW1.o schreierW.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o dretodot -O3  -mpopcnt -march=native dretodot.c naututil.o gtools.o \
+	    traces.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib  -lm
+gcc -o subdivideg -O3  -mpopcnt -march=native subdivideg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o vcolg -O3  -mpopcnt -march=native vcolg.c gtnauty.o naututil.o \
+		nautinv.o gtools.o naugroup.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o delptg -O3  -mpopcnt -march=native delptg.c gtools.o gtnauty.o \
+		 nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o cubhamg -O3  -mpopcnt -march=native cubhamg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o twohamg -O3  -mpopcnt -march=native twohamg.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o hamheuristic -O3  -mpopcnt -march=native hamheuristic.c gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o converseg -O3  -mpopcnt -march=native converseg.c nautinv.o gtools.o \
+		nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o nbrhoodg -O3  -mpopcnt -march=native nbrhoodg.c gtools.o gtnauty.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o genspecialg -O3  -mpopcnt -march=native genspecialg.c nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o gtools.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o edgetransg -O3  -mpopcnt -march=native edgetransg.c gtnauty.o naututil.o \
+		nautinv.o gtools.o naugroup.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o genbgL -O3  -mpopcnt -march=native -DMAXN=WORDSIZE -DWORDSIZE=64 -DMAXN1=30 genbg.c gtoolsL.o \
+	    schreierL.o naurng.o nautyL1.o nautilL1.o naugraphL1.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o shortg -O3  -mpopcnt -march=native shortg.c gtools.o gtnauty.o nautinv.o \
+            nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o gutil2.o naututil.o traces.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+gcc -o dreadnaut -O3 dreadnaut.c naututil.o \
+		nautinv.o gtools.o traces.o nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o -L/usr/local/opt/zlib/lib -L/usr/local/opt/bzip2/lib 
+rm -f nauty.a
+ar crs nauty.a nauty.o nautil.o nausparse.o naugraph.o schreier.o naurng.o traces.o gtools.o naututil.o \
+		 nautinv.o gutil1.o gutil2.o gtnauty.o naugroup.o \
+		 naurng.o schreier.o nautycliquer.o
+rm -f nauty1.a
+ar crs nauty1.a nauty1.o nautil1.o nausparse.o naugraph1.o schreier.o naurng.o traces.o gtools.o naututil1.o \
+	   nautinv1.o gutil1.o gutil2.o gtnauty.o naugroup.o nautycliquer.o
+rm -f nautyW.a
+ar crs nautyW.a nautyW.o nautilW.o nausparseW.o naugraphW.o schreierW.o naurng.o traces.o gtoolsW.o naututilW.o \
+	   nautinvW.o gutil1W.o gutil2W.o gtnautyW.o naugroupW.o nautycliquerW.o
+rm -f nautyW1.a
+ar crs nautyW1.a nautyW1.o nautilW1.o nausparseW.o naugraphW1.o schreierW.o naurng.o traces.o gtoolsW.o naututilW1.o \
+	   nautinvW1.o gutil1W1.o gutil2W1.o gtnautyW1.o naugroupW.o nautycliquerW.o
+rm -f nautyL.a
+ar crs nautyL.a nautyL.o nautilL.o nausparseL.o naugraphL.o schreierL.o naurng.o traces.o gtoolsL.o naututilL.o \
+	   nautinvL.o gutil1L.o gutil2L.o gtnautyL.o naugroupL.o nautycliquerL.o
+rm -f nautyL1.a
+ar crs nautyL1.a nautyL1.o nautilL1.o nausparseL.o naugraphL1.o schreierL.o naurng.o traces.o gtoolsL.o naututilL1.o \
+	   nautinvL1.o gutil1L1.o gutil2L1.o gtnautyL1.o naugroupL.o nautycliquerL.o
+[ Info: Building nauty...
