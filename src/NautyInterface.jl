@@ -151,7 +151,7 @@ function to_adj(X::StructACSet{S}) where S
   mr, mc = size(mat)
   mat = [mat zeros(Bool, mr, mr-mc)]
   colorsarray = Vector{Int}[findall(==(c), colors) for c in OrderedSet(colors)]
-  (mat .|| mat', oinds, colorsarray)  # symmetrize matrix
+  (mat .| mat', oinds, colorsarray)  # symmetrize matrix
 end
 
 """
