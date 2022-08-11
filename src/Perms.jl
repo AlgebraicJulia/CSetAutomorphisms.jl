@@ -57,6 +57,7 @@ function all_perms(perm_gens::Vector{CDict})::Set{CDict}
   Recursive function based on (sub)chain C and partial product r
   Algorithm from Fig II.1 of Alexander Hulpke's notes on Computational
   Group Theory (Spring 2010).
+  https://www.math.colostate.edu/~hulpke/CGT/cgtnotes.pdf
   """
   function enum(i::Int, r)::Nothing
     leaf = i == length(Cs)

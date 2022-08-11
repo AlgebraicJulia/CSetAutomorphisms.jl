@@ -57,8 +57,8 @@ function test_iso(a::StructACSet, b::StructACSet)::Test.Pass
   eq = is_isomorphic(a,b)
   tst = (x,y) -> eq ? x==y : x!=y # hashes should be equal iff they're iso
   @test tst(canonical_hash(a), canonical_hash(b))
-  na = call_nauty(a)
-  nb = call_nauty(b)
+  na = call_nauty(a).hsh
+  nb = call_nauty(b).hsh
   @test tst(na, nb)
 end
 
