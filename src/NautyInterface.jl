@@ -74,9 +74,10 @@ function call_nauty(g::StructACSet{S}; check=false) where S
 
   # parse canonical graph
   canonm = zeros(Bool, size(m))
-  for (i,r) in enumerate(first.(collect.(eachmatch(reg_canon, res))))
-    if !isempty(strip(r))
-      canonm[i,[parse(Int,x)+1 for x in split(strip(r)," ")]] .= true
+  for (i,r) in enumerate([strip(first(y.captures))
+                          for y in eachmatch(reg_canon, res)])
+    if !isempty(r)
+      canonm[i,[parse(Int,x)+1 for x in split(r," ")]] .= true
     end
   end
   canong = from_adj(g, oinds, canonm)
