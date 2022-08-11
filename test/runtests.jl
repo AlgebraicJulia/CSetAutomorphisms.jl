@@ -1,6 +1,6 @@
 using Test
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
-using Revise
+# using Revise
 using CSetAutomorphisms
 using Catlab.Graphs
 
