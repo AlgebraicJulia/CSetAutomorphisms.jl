@@ -1,5 +1,9 @@
+module Visualization
+export to_vizstate
 
 using Catlab.WiringDiagrams, Catlab.Graphs
+using ..Perms: CDict, max0
+using ..Canonical: Tree, VPSI, History
 
 function to_parts(xs::Vector{Int}; distinguish::Int=0)::String
   join([let xi=(findall(==(i), xs)), x=join(xi, " "), b=i==distinguish;
@@ -143,3 +147,4 @@ function process_history(hs::Vector{History})::Vector{Pair{WiringDiagram, String
   return res
 end
 
+end # module

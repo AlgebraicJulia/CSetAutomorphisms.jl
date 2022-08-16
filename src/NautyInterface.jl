@@ -1,3 +1,6 @@
+module NautyInterface
+export call_nauty
+
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
 using DataStructures: OrderedSet, DefaultDict
 
@@ -33,6 +36,7 @@ end
 
 
 """
+- hsh: string value representing the isomorphism class
 - orb: partitions of Cset parts into orbits
   e.g. if E#2 = E#5, then these two elements are symmetric
 - ngrp: number of elements in the automorphism group
@@ -40,12 +44,12 @@ end
 - cset: canonical isomorph, codom of cmap
 """
 struct NautyRes
-  hsh::String
-  orb::Dict{Symbol, Vector{Int}}
-  gens::Vector{CPerm} # generating perms
-  ngrp::Int
-  cmap::ACSetTransformation
-  cset::StructACSet
+  hsh#::String
+  orb# ::Dict{Symbol, Vector{Int}}
+  gens#::Vector{CPerm} # generating perms
+  ngrp#::Int
+  cmap#::ACSetTransformation
+  cset#::StructACSet
 end
 
 """
@@ -227,3 +231,4 @@ function all_autos(X::StructACSet, gens::Vector{CPerm})
   return values(seen) |> collect
 end
 
+end # module

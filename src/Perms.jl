@@ -1,4 +1,7 @@
+module Perms
+
 using Catlab.CategoricalAlgebra.CSets
+using Catlab.Theories
 using PermutationGroups
 
 # Color assigned to each elem of each compoennt
@@ -7,7 +10,7 @@ const CDict = Dict{Symbol, Vector{Int}}
 # The maximum color of an empty color list is 0
 max0(x::Vector{Int})::Int = isempty(x) ? 0 : maximum(x)
 
-check_auto(x::CDict)::Bool = all(map(Base.isperm, values(x)))
+check_auto(x::CDict)::Bool = all(Base.isperm, values(x))
 
 
 """
@@ -168,3 +171,5 @@ function get_colors_by_size(coloring::CDict)::Vector{Pair{Int,Tuple{Symbol, Int}
   end
   return res
 end
+
+end # module

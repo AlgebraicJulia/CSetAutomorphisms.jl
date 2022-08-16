@@ -1,6 +1,10 @@
+module ColorRefine
+
 using Catlab.CategoricalAlgebra.CSets
 using Catlab.Theories
 using AutoHashEquals
+
+using ..Perms: CDict, max0
 
 
 """
@@ -105,3 +109,5 @@ function color_saturate(g::StructACSet{S};
   indicator = hash(Dict([k=>Set(v) for (k,v) in hashes]))
   return res => indicator
 end
+
+end # module
