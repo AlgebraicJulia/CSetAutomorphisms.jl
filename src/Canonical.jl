@@ -1,7 +1,14 @@
-using Catlab.Theories: adom, attr, attrtype, attr, adom, acodom
-using Catlab.Present
-using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
+module Canonical
+export autos, canonical_hash, canonical_iso
 
+using Catlab.Theories: adom, attr, attrtype, attr, adom, acodom, Ob, Hom
+using Catlab.Present, Catlab.CategoricalAlgebra
+using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
+using PermutationGroups
+
+using ..Perms: CDict, get_colors_by_size, is_perms, invert_perms, compose_perms,
+               apply_automorphism, compose_comp
+using ..ColorRefine: nocolor, color_saturate
 
 const VPSI = Vector{Pair{Symbol, Int}}
 
@@ -442,3 +449,4 @@ function autos(g::StructACSet;
   return Set([tree[ln].saturated for ln in leafnodes]), tree, hist
 end
 
+end # module

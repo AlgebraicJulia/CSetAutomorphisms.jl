@@ -1,10 +1,16 @@
+module TestHelp
+
+using ..Canonical
+using ..NautyInterface
+
+
+using Test
+using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
+using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
+
 """
 Functions that help the automation of tests
 """
-
-using Test
-using Catlab.CategoricalAlgebra, Catlab.Present
-using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
 
 # Functions to make schemas programmatically
 ############################################
@@ -75,3 +81,5 @@ end
 end
 
 @acset_type Labeled(TheoryDecGraph)
+
+end # module
