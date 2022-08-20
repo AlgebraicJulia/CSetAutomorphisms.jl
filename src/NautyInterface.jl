@@ -1,28 +1,35 @@
 module NautyInterface
-export call_nauty
+export call_nauty, all_autos
 
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
 using DataStructures: OrderedSet, DefaultDict
-
+using Permutations
+import Base: (*)
 
 bashit(str) = run(`bash -c "$str"`)
 
+const Perm = Dict{Symbol, Permutation}
+(*)(x::Perm,y::Perm) = Dict([k=>x[k]*y[k] for k in keys(x)])
+inv(x::Perm) = Dict([k=>inv(v) for (k,v) in collect(x)])
+function mk_cycle(xs,n)
+  z = collect(1:n);
+  for (x,y) in zip(xs, [xs[2:end]; xs[1]])
+    z[y] = x;
+  end
+  Permutation(z)
+end
 
+idperm(n::Int) = Permutation(1:n)
+function to_perm(p::Permutation, oinds::Dict{Symbol,UnitRange})::Perm
+  canon = collect(p)
+  canon2 = Dict([k=>canon[v].-(v.start-1) for (k,v) in oinds if v.stop <= length(canon)])
+  Dict([k=>Permutation(v) for (k,v) in collect(canon2)])
+end
 struct CPerm
   obs::Dict{Symbol, FinFunction}
   homs::Dict{Symbol, Pair{FinFunction, FinFunction}}
 end
 
-
-function CPerm2(oinds::Dict{Symbol,UnitRange},canon::Vector{Int}, S)
-  canon2 = Dict([k=>canon[v].-(v.start-2) for (k,v) in oinds])
-  omap = Dict([k=>FinFunction(v) for (k,v) in collect(canon2) if k ∈ ob(S)])
-  hmap = Dict(map(zip(hom(S),dom(S),codom(S))) do (h,s,t)
-          σt,σsi = FinFunction.([canon2[t],(canon2[s])])
-          h=>(σsi=>σt)
-        end)
-  CPerm(omap, hmap)
-end
 
 function CPerm(oinds::Dict{Symbol,UnitRange},canon::Vector{Int}, S)
   canon2 = Dict([k=>canon[v].-(v.start-2) for (k,v) in oinds])
@@ -67,14 +74,24 @@ function call_nauty(g::StructACSet{S}; check=false) where S
   res = open(f->read(f, String), tmp)
 
   # regexes
-  reg_perms = r"(([ ]\d+)+\n)([ ][ ][ ]([ ]\d+)+\n)*"
+  reg_cycle = r"\((?:(\d+)\s+)*(\d+)\)"
+  reg_gens = r"((?:\((?:\d+\s+)*\d+\)\s*)+)level \d+:  (?:\d cells\; )?\d+ orbits?; \d+ fixed; index (\d+)(:?\/\d+)?\n"
+  reg_perm = r"(?: \d+)+\n(?:   (?: \d+)+\n)*"
   reg_canon = r"\d+ :[ ](([ ]\d+)*);"
   reg_hash = r"\[(\w+ \w+ \w+)\]"
-
-  # parse permutations for generators + the canonical graph
-  cp,gens... = reverse(map(eachmatch(reg_perms, res[1:findlast(']', res)])) do rng
-    CPerm(oinds, [parse(Int, x) for x in split(strip(rng.match), r"\s+")], S)
-  end)
+  # get generators
+  sec = findfirst("seconds",res).stop
+  max_n = maximum(oinds[o].stop for o in ob(S))
+  gens = map(eachmatch(reg_gens, res[1 : sec])) do mtch
+    cycs = eachmatch(reg_cycle, mtch[1])
+    perm = filter(x->maximum(x) <= max_n,
+                  [[parse(Int,x)+1 for x in m] for m in cycs])
+    is = Set(vcat(perm...))
+    Permutation([perm;[[i] for i in 1:max_n if i ∉ is]]) => parse(Int,mtch[2])
+  end
+  # parse permutation for the canonical graph
+  rng = match(reg_perm, res[sec : end])
+  cp = CPerm(oinds, [parse(Int, x) for x in split(strip(rng.match), r"\s+")], S)
 
   # parse canonical graph
   canonm = zeros(Bool, size(m))
@@ -159,6 +176,8 @@ function to_adj(X::StructACSet{S}) where S
   (mat .| mat', oinds, colorsarray)  # symmetrize matrix
 end
 
+get_oinds(X) = to_adj(X)[2]
+
 """
 Symmetric adjacency matrix to C-Set.
 """
@@ -185,6 +204,8 @@ end
 """
 Construct input for dreadnaut to compute automorphism group generators,
 canonical permutation/hash, and orbits.
+
+TODO can we get a canonical AUTOMORPH (not isomorph) by fixing all of the obs but not the homs?
 """
 function dreadnaut(g::StructACSet)
   m,_, colorsarray = to_adj(g)
@@ -193,42 +214,77 @@ function dreadnaut(g::StructACSet)
           join(string.((x->x-1).(findall(==(1),m[r,:]))) ," ")
         end, ";"),
         ". f = [$(join([join(c.-1, ",") for c in colorsarray],"|"))]",
-        "p -m c d x b z o"], " ")
+        "c d x b z o"], " ")
 end
 
 """
 Apply a permutation on a CSet.
 """
-function apply(X::StructACSet{S}, p::CPerm; fix=false,check=false) where S
+function apply(X::StructACSet{S}, p::CPerm) where S
   cd = deepcopy(X)
   for (h,s,t) in zip(hom(S),dom(S),codom(S))
     σs, σt = [FinFunction((collect(x))) for x in p.homs[h]]
     σti = FinFunction(invperm(collect(σt)))
     f = FinFunction(X,h)
-    m =  compose(σs, f, (fix ? [] : [σti])...)
+    m =  compose(σs, f, σti)
     set_subpart!(cd, h, m)
   end
-  h = ACSetTransformation(X, cd; Dict([k=>FinFunction(invperm(collect(v))) for (k,v) in p.obs])...)
-  if check && !is_natural(h) error("is not natural") end
+  h = ACSetTransformation(X, cd; Dict([k=>FinFunction(invperm(collect(v)))
+                                       for (k,v) in p.obs])...)
+  !is_natural(h)
   return h
 end
 
-all_autos(nr::NautyRes) =  all_autos(nr.cset, nr.gens)
+apply(X::StructACSet,p::Perm) = ACSetTransformation(X,X;Dict([
+  k=>FinFunction(Int[v...]) for (k,v) in collect(p)])...)
+apply(X::StructACSet,p::Permutation,oinds) = apply(X,to_perm(p,oinds))
 
 
-function all_autos(X::StructACSet, gens::Vector{CPerm})
-  seen = Dict(string(X)=>X)
-  to_check = [X=>g for g in gens]
-  while !isempty(to_check)
-    M, g = pop!(to_check)
-    M′ = codom(apply(M, g; fix=true))
-    s = string(M′)
-    if !haskey(seen, s)
-      seen[s] = M′
-      append!(to_check, [M′=>g for g in gens])
-    end
+"""
+Take advantage of the very special structure of automorphism generators given
+by nauty to efficiently enumerate the automorphism group.
+The generators are all given by disjoint swaps (and therefore are of order 2).
+We expand our automorphism group with each generator, which comes with a number
+"index" saying by what factor it increases the group. So if after gₙ we
+have an automorphism group of size N, then if gₙ₊₁ has an index of 3,
+then we will have fully incorporated the new generator when our group is of size
+3*N. Moreover, there are just three new elements which start with gₙ₊₁ that we
+need to find, which we compose with our earlier group to get the new group. Our
+while loop explores the possible words that we can build (starting with gₙ₊₁)
+
+"""
+function all_autos(X::NautyRes)
+  res = all_autos(X.cset, X.gens)
+  length(res) == X.ngrp || error("autos doesn't match")
+  return res
+end
+
+function all_autos(X::StructACSet, gens)
+  oinds = get_oinds(X)
+  if isempty(gens)
+    return [id(X)]
+  elseif length(gens) == 1
+    g, n = gens[1]
+    return [apply(X, prod(fill(g,i)), oinds) for i in 1:n]
   end
-  return values(seen) |> collect
+  n, curr = length(gens[1][1]), 1
+  all_gens = Set([idperm(n)])
+  for (i,(g, m)) in enumerate(gens)
+    old_gens, queue = deepcopy(all_gens), [[g]]
+    while !isempty(queue)
+      q = pop!(queue)
+      qgen, qlast = prod(q), q[end]
+      if first(old_gens)*qgen ∉ all_gens
+        for og in old_gens push!(all_gens, og*qgen) end
+        append!(queue, [[q...,prev_g] for prev_g in
+                       filter(!=(qlast), first.(gens[1:i]))])
+      end
+    end
+    lg, cm = length(all_gens), curr * m
+    lg == cm || error("failed check |all_gens|=$lg expected $cm")
+    curr = length(all_gens)
+  end
+  return [apply(X, p, oinds) for p in all_gens]
 end
 
 end # module
