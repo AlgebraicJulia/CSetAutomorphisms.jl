@@ -85,7 +85,7 @@ function call_nauty(g::StructACSet{S}; check=false) where S
   gens = map(eachmatch(reg_gens, res[1 : sec])) do mtch
     cycs = eachmatch(reg_cycle, mtch[1])
     perm = filter(x->maximum(x) <= max_n,
-                  [[parse(Int,x)+1 for x in m] for m in cycs])
+                  [[parse(Int,x)+1 for x in m.captures] for m in cycs])
     is = Set(vcat(perm...))
     Permutation([perm;[[i] for i in 1:max_n if i ∉ is]]) => parse(Int,mtch[2])
   end
