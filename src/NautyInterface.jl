@@ -77,7 +77,7 @@ function call_nauty(g::StructACSet{S}; check=false) where S
   reg_cycle = r"\((?:(\d+)\s+)*(\d+)\)"
   reg_gens = r"((?:\((?:\d+\s+)*\d+\)\s*)+)level \d+:  (?:\d cells\; )?\d+ orbits?; \d+ fixed; index (\d+)(:?\/\d+)?\n"
   reg_perm = r"(?: \d+)+\n(?:   (?: \d+)+\n)*"
-  reg_canon = r"\d+ :[ ](([ ]\d+)*);"
+  reg_canon = r"\d+ :[ ]((\s+\d+)*);"
   reg_hash = r"\[(\w+ \w+ \w+)\]"
   # get generators
   sec = findfirst("seconds",res).stop
@@ -98,9 +98,10 @@ function call_nauty(g::StructACSet{S}; check=false) where S
   for (i,r) in enumerate([strip(first(y.captures))
                           for y in eachmatch(reg_canon, res)])
     if !isempty(r)
-      canonm[i,[parse(Int,x)+1 for x in split(r," ")]] .= true
+      canonm[i,[parse(Int,x)+1 for x in split(r,r"\s+")]] .= true
     end
   end
+
   canong = from_adj(g, oinds, canonm)
 
   # parse other things
