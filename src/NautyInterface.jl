@@ -59,10 +59,15 @@ struct NautyRes
   cset#::StructACSet
 end
 
+# Canonical nautyRes for an empty C-set
+NautyRes(g::StructACSet{S}) where S =  NautyRes(
+  "",Dict([o=>Int[] for o in ob(S)]),CPerm[],1,id(g),g)
+
 """
 Make shell command to dreadnaut and collect output
 """
 function call_nauty(g::StructACSet{S}; check=false) where S
+  if g == typeof(g)() return NautyRes(g) end
   m,oinds,_ = to_adj(g)
 
   # Run nauty and collect output as a string
