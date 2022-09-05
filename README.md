@@ -2,8 +2,9 @@
 
 [Attributed C-sets](https://arxiv.org/pdf/2106.04703.pdf) encompass a broad class of data structures, including many generalizations of graphs (e.g. [directed](https://www.algebraicjulia.org/blog/post/2020/09/cset-graphs-1/), [symmetric](https://www.algebraicjulia.org/blog/post/2020/09/cset-graphs-2), [reflexive](https://www.algebraicjulia.org/blog/post/2021/04/cset-graphs-3/)), tabular data (e.g. [data frames](https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html)), and combinations of the two (e.g. weighted graphs, [relational databases](https://en.wikiversity.org/wiki/Relational_Databases/Introduction)). This repo generalizes the [Nauty](https://pallini.di.uniroma1.it/Introduction.html) algorithm, which produces canonical members of an isomorphism class, to cover any data structure encompassed by C-Sets. Furthermore, we compute and represent orbits and full automorphism groups of a C-Set, which can be applied to solving certain problems (e.g. searching for homomorphisms from A to B, up to isomorphism).
 
-More background is found in the documentation (click above) or this [blog](https://www.algebraicjulia.org/blog/post/2022/01/cset-automorphisms/) post.
+More background is found in the [documentation](https://algebraicjulia.github.io/CSetAutomorphisms.jl/dev/) or this [blog](https://www.algebraicjulia.org/blog/post/2022/01/cset-automorphisms/) post.
 
 ## To do
 - An upcoming refactor of Catlab using [CompTime.jl](https://github.com/olynch/CompTime.jl) will make it feasible to reimplement the core algorithm using code custom generated for a given C-Set, offering new opportunities for performance improvements.
+- For now, it is recommended to just use `NautyInterface` which reduces a C-Set automorphism problem to an undirected multigraph automorphism problem, which is fed `nauty.c`.
 
