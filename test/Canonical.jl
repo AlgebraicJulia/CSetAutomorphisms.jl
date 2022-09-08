@@ -7,7 +7,7 @@ using CSetAutomorphisms
 using CSetAutomorphisms.NautyInterface: all_autos
 using CSetAutomorphisms.Canonical: common
 using CSetAutomorphisms.Perms: apply_automorphism
-using CSetAutomorphisms.TestHelp: test_iso, init_graphs
+using CSetAutomorphisms.TestHelp: test_iso, init_graphs, Labeled
 
 
 using Random
@@ -119,75 +119,43 @@ catschema2 = apply_automorphism(catschema, random_perm)
 test_iso(catschema,catschema2)
 
 
-# ACSet Tests - to be supported in the future
-#############################################
-if false
+# ACSet Tests - to be supported by call_nauty in the future
+###########################################################
 G = @acset Labeled{String} begin
-  V = 4
-  E = 4
-  src = [1,2,3,4]
-  tgt = [2,3,4,1]
-  dec = ["a","b","c","d"]
+  V = 4; E = 4; src = [1,2,3,4]; tgt = [2,3,4,1]; dec = ["a","b","c","d"]
 end;
 
 
 H = @acset Labeled{String} begin
-  V = 4
-  E = 4
-  src = [1,3,2,4]
-  tgt = [3,2,4,1]
-  dec = ["a","b","c","d"]
+  V = 4; E = 4; src = [1,3,2,4]; tgt = [3,2,4,1]; dec = ["a","b","c","d"]
 end;
 
-test_iso(G, H) # vertices permuted
+@test canonical_hash(G) == canonical_hash(H)
 
 I = @acset Labeled{String} begin
-V = 4
-E = 4
-src = [1,2,3,4]
-tgt = [2,3,4,1]
-dec = ["b","c","d","a"]
+  V = 4; E = 4; src = [1,2,3,4]; tgt = [2,3,4,1]; dec = ["b","c","d","a"]
 end;
-
-test_iso(G, I) # labels permuted
 
 N = @acset Labeled{String} begin
-  V = 4
-  E = 4
-  src = [1,2,3,4]
-  tgt = [2,3,4,1]
-  dec = ["a","a","b","c"]
+  V = 4; E = 4; src = [1,2,3,4]; tgt = [2,3,4,1]; dec = ["a","a","b","c"]
 end;
 
-test_iso(G,N) # label mismatch
+@test canonical_hash(G) != canonical_hash(N)
 
 K = @acset Labeled{String} begin
-  V = 4
-  E = 4
-  src = [1,3,2,4]
-  tgt = [2,3,4,1]
-  dec = ["a","d","b","c"]
+  V = 4; E = 4; src = [1,3,2,4]; tgt = [2,3,4,1]; dec = ["a","d","b","c"]
 end;
 
-test_iso(G, K) # vertex mismatch
+@test canonical_hash(G) != canonical_hash(K)
 
 G1 = @acset Labeled{String} begin
-  V = 1
-  E = 1
-  src = [1]
-  tgt = [1]
-  dec = ["a"]
+  V = 1; E = 1; src = [1]; tgt = [1]; dec = ["a"]
 end;
 
 H1 = @acset Labeled{String} begin
-  V = 1
-  E = 1
-  src = [1]
-  tgt = [1]
-  dec = ["b"]
+  V = 1; E = 1; src = [1]; tgt = [1]; dec = ["b"]
 end;
 
-test_iso(G1, H1) # label values different
-end
+@test canonical_hash(G1) != canonical_hash(H1)
 
 end # module
