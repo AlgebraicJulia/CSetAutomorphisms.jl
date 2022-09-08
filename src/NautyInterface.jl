@@ -2,6 +2,7 @@ module NautyInterface
 export call_nauty, all_autos
 
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
+using Catlab.Theories: attr
 using DataStructures: OrderedSet, DefaultDict
 using Permutations
 import Base: (*)
@@ -68,6 +69,9 @@ Make shell command to dreadnaut and collect output
 """
 function call_nauty(g::StructACSet{S}; check=false) where S
   if g == typeof(g)() return NautyRes(g) end
+  if !isempty(attr(S))
+    @warn "Attributes are currently unsupported by call_nauty - ignoring them"
+  end
   m,oinds,_ = to_adj(g)
 
   # Run nauty and collect output as a string
