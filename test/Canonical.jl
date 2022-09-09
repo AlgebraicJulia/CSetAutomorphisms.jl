@@ -130,7 +130,7 @@ H = @acset Labeled{String} begin
   V = 4; E = 4; src = [1,3,2,4]; tgt = [3,2,4,1]; dec = ["a","b","c","d"]
 end;
 
-@test canonical_hash(G) == canonical_hash(H)
+test_iso(G,H)
 
 I = @acset Labeled{String} begin
   V = 4; E = 4; src = [1,2,3,4]; tgt = [2,3,4,1]; dec = ["b","c","d","a"]
@@ -139,14 +139,12 @@ end;
 N = @acset Labeled{String} begin
   V = 4; E = 4; src = [1,2,3,4]; tgt = [2,3,4,1]; dec = ["a","a","b","c"]
 end;
-
-@test canonical_hash(G) != canonical_hash(N)
+test_iso(I,N)
 
 K = @acset Labeled{String} begin
   V = 4; E = 4; src = [1,3,2,4]; tgt = [2,3,4,1]; dec = ["a","d","b","c"]
 end;
-
-@test canonical_hash(G) != canonical_hash(K)
+test_iso(I,K)
 
 G1 = @acset Labeled{String} begin
   V = 1; E = 1; src = [1]; tgt = [1]; dec = ["a"]
@@ -155,7 +153,6 @@ end;
 H1 = @acset Labeled{String} begin
   V = 1; E = 1; src = [1]; tgt = [1]; dec = ["b"]
 end;
-
-@test canonical_hash(G1) != canonical_hash(H1)
+test_iso(G1,H1)
 
 end # module

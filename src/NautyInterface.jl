@@ -2,7 +2,7 @@ module NautyInterface
 export call_nauty, all_autos
 
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
-using Catlab.Theories: attr
+using Catlab.Theories: attr, adom, acodom
 using DataStructures: OrderedSet, DefaultDict
 using Permutations
 import Base: (*)
@@ -26,20 +26,29 @@ function to_perm(p::Permutation, oinds::Dict{Symbol,UnitRange})::Perm
   canon2 = Dict([k=>canon[v].-(v.start-1) for (k,v) in oinds if v.stop <= length(canon)])
   Dict([k=>Permutation(v) for (k,v) in collect(canon2)])
 end
+
+"""
+Because the hom/attr perms really are just given by the perms on their
+domain/codomain, we don't actually need to track anything other than 'obs'. TODO
+"""
 struct CPerm
   obs::Dict{Symbol, FinFunction}
   homs::Dict{Symbol, Pair{FinFunction, FinFunction}}
+  attrs::Dict{Symbol, FinFunction}
 end
 
-
-function CPerm(oinds::Dict{Symbol,UnitRange},canon::Vector{Int}, S)
+"""Construct a CPerm given some parsed nauty output"""
+function CPerm(oinds::Dict{Symbol,UnitRange}, canon::Vector{Int}, S)
   canon2 = Dict([k=>canon[v].-(v.start-2) for (k,v) in oinds])
   omap = Dict([k=>FinFunction(v) for (k,v) in collect(canon2) if k ∈ ob(S)])
   hmap = Dict(map(zip(hom(S),dom(S),codom(S))) do (h,s,t)
           σt,σsi = FinFunction.([canon2[t],(canon2[s])])
           h=>(σsi=>σt)
         end)
-  CPerm(omap, hmap)
+  amap = Dict(map(zip(attr(S),adom(S),acodom(S))) do (h,s,t)
+    h => FinFunction(canon2[s])
+  end)
+  CPerm(omap, hmap, amap)
 end
 
 
@@ -65,14 +74,12 @@ NautyRes(g::StructACSet{S}) where S =  NautyRes(
   "",Dict([o=>Int[] for o in ob(S)]),CPerm[],1,id(g),g)
 
 """
-Make shell command to dreadnaut and collect output
+Make shell command to dreadnaut and collect output.
 """
 function call_nauty(g::StructACSet{S}; check=false) where S
   if g == typeof(g)() return NautyRes(g) end
-  if !isempty(attr(S))
-    @warn "Attributes are currently unsupported by call_nauty - ignoring them"
-  end
-  m,oinds,_ = to_adj(g)
+
+  m, oinds, _ = to_adj(g)
 
   # Run nauty and collect output as a string
   inp = dreadnaut(g)
@@ -114,7 +121,7 @@ function call_nauty(g::StructACSet{S}; check=false) where S
   canong = from_adj(g, oinds, canonm)
 
   # parse other things
-  hshstr = match(reg_hash, res)[1]
+  hshstr = match(reg_hash, res)[1] * "$(hash(attr_dict(g)))"
   orb = parse_orb(g, oinds, res)
   grpsize = parse(Int, match(r"grpsize=(\d+)", res)[1])
 
@@ -145,8 +152,36 @@ function parse_orb(g::StructACSet{S}, oinds, res::String) where S
   return orb
 end
 
+"""Get all attribute values that are touched upon by the ACSet. Order them."""
+function attr_dict(X::StructACSet{S}) where S
+  d = DefaultDict(()->Any[])
+  for (a,dt) in zip(attr(S),acodom(S))
+    append!(d[dt], X[a])
+  end
+  return Dict([k=>sort(collect(unique(v))) for (k,v) in collect(d)])
+end
+
 """
-Convert C-Set to symmetricadjacency matrix
+Convert C-Set to an adjacency matrix of an *undirected* simple graph.
+
+the matrix has rows for all parts (e.g. |E| and |V|), all homs (e.g. |E|
+quantity of src & tgt nodes), and another copy of all homs (called, e.g., _src
+and _tgt). For a given edge in the category of elements eₙ -- src --> vₘ,
+we set edges in the simple diagraph:
+
+        ↗ _src
+      ↙    ↕
+    eₙ <-> srcₙ <-> vₘ
+
+
+This "duplicate" hom vertex encodes the directionality of the hom, which is
+ambiguous in the case of endomorphisms. (potential idea: only have the extra hom
+when it's an endomorphism. counterpoint: color saturation should pretty easily
+deal with it as it is, though).
+
+For attributes, there is no possibility of Attr(X,X), so we simply have, e.g.:
+    vₘ <-> vlabelₘ <-> valₓ
+
 """
 function to_adj(X::StructACSet{S}) where S
   p = Presentation(S)
@@ -156,6 +191,14 @@ function to_adj(X::StructACSet{S}) where S
     oinds[o] = curr:length(colors)
     curr = length(colors) + 1
   end
+
+  attrdict = attr_dict(X)
+  for (k,v) in collect(attrdict)
+    append!(colors, fill(k, length(v)))
+    oinds[k] = curr:length(colors)
+    curr = length(colors) + 1
+  end
+
   n_ob = length(colors)
   mat = zeros(Bool, (n_ob,n_ob))
 
@@ -180,24 +223,54 @@ function to_adj(X::StructACSet{S}) where S
     curr = length(colors) + 1
     mat = [mat;hom_mat]
   end
+
+  for h in p.generators[:Attr]
+    hom_name, d_, cd_  = h.args
+    d,cd = [d_.args[1], cd_.args[1]]
+    nd = nparts(X, d)
+    orig_rows = size(mat)[1]
+
+    mat = [mat zeros(Bool, (orig_rows, nd))]
+    hom_mat = zeros(Bool, (nd,size(mat)[2]))
+    for (i,val) in enumerate(X[hom_name])
+      v = findfirst(==(val), attrdict[cd])
+      hom_mat[i,[oinds[cd][v],oinds[d][i]]] .= true
+    end
+    append!(colors, vcat(fill(hom_name, nparts(X, d))))
+    oinds[hom_name] = curr:length(colors)
+    curr = length(colors) + 1
+    mat = [mat;hom_mat]
+  end
+
   mr, mc = size(mat)
   mat = [mat zeros(Bool, mr, mr-mc)]
-  colorsarray = Vector{Int}[findall(==(c), colors) for c in OrderedSet(colors)]
+  colorsarray = Vector{Int}[]
+  for c in OrderedSet(colors)
+    if c ∉ keys(attrdict)
+      push!(colorsarray,findall(==(c), colors)) # [1..n] we don't know order
+    else
+      # for attributes we do know the canonical order, so it's fully partitioned
+      append!(colorsarray, [[oinds[c][i]] for i in 1:length(attrdict[c])])
+    end
+  end
   (mat .| mat', oinds, colorsarray)  # symmetrize matrix
 end
 
 get_oinds(X) = to_adj(X)[2]
 
 """
-Symmetric adjacency matrix to C-Set.
+Symmetric adjacency matrix to ACSet.
 """
 function from_adj(X::StructACSet{S}, oinds::Dict{Symbol, UnitRange},
                   m::AbstractMatrix{Bool}) where S
-  Y = deepcopy(X)
+  Y = deepcopy(X) # db with the right # of rows. We'll completely overwrite it.
+  attrdict = attr_dict(X)
+
   inv_dict = Dict(vcat(map(collect(oinds)) do (k,vs)
     [v=>i for (i,v) in enumerate(vs)]
   end...))
-  inv_ = [inv_dict[i] for i in 1:length(inv_dict)]
+
+  # Recover the homs
   for (h, s, t) in zip(hom(S),dom(S),codom(S))
     h_ = Symbol("_$h")
     for (i,h_i) in enumerate(oinds[h_])
@@ -208,14 +281,21 @@ function from_adj(X::StructACSet{S}, oinds::Dict{Symbol, UnitRange},
       set_subpart!(Y, inv_dict[src_ind], h, inv_dict[tgt_ind])
     end
   end
+  # Recover the attributes
+  for (h,s,t) in zip(attr(S), adom(S), acodom(S))
+    for (_,h_i) in enumerate(oinds[h])
+      src_ind, tgt_ind = findall(m[h_i,:])
+      # println("i $i h_i $h_i src_ind $src_ind tgt_ind $tgt_ind")
+      # src_ind == i || error("Unexpected")
+      set_subpart!(Y, inv_dict[src_ind], h, attrdict[t][inv_dict[tgt_ind]])
+    end
+  end
   Y
 end
 
 """
 Construct input for dreadnaut to compute automorphism group generators,
 canonical permutation/hash, and orbits.
-
-TODO can we get a canonical AUTOMORPH (not isomorph) by fixing all of the obs but not the homs?
 """
 function dreadnaut(g::StructACSet)
   m,_, colorsarray = to_adj(g)
@@ -239,6 +319,14 @@ function apply(X::StructACSet{S}, p::CPerm) where S
     m =  compose(σs, f, σti)
     set_subpart!(cd, h, m)
   end
+
+  for (h,s) in zip(attr(S), adom(S))
+    σs = p.attrs[h]
+    f = FinDomFunction(X,h)
+    m =  compose(σs, f)
+    set_subpart!(cd, h, m)
+  end
+
   h = ACSetTransformation(X, cd; Dict([k=>FinFunction(invperm(collect(v)))
                                        for (k,v) in p.obs])...)
   !is_natural(h)
@@ -261,7 +349,6 @@ then we will have fully incorporated the new generator when our group is of size
 3*N. Moreover, there are just three new elements which start with gₙ₊₁ that we
 need to find, which we compose with our earlier group to get the new group. Our
 while loop explores the possible words that we can build (starting with gₙ₊₁)
-
 """
 function all_autos(X::NautyRes)
   res = all_autos(X.cset, X.gens)
