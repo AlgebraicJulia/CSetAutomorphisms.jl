@@ -2,7 +2,7 @@ module NautyInterface
 export call_nauty, all_autos
 
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Graphs
-using Catlab.Theories: attr, adom, acodom
+using Catlab.Schemas: attr, adom_nums, acodom_nums
 using DataStructures: OrderedSet, DefaultDict
 using Permutations
 import Base: (*)
@@ -41,11 +41,11 @@ end
 function CPerm(oinds::Dict{Symbol,UnitRange}, canon::Vector{Int}, S)
   canon2 = Dict([k=>canon[v].-(v.start-2) for (k,v) in oinds])
   omap = Dict([k=>FinFunction(v) for (k,v) in collect(canon2) if k ∈ ob(S)])
-  hmap = Dict(map(zip(hom(S),dom(S),codom(S))) do (h,s,t)
+  hmap = Dict(map(homs(S)) do (h,s,t)
           σt,σsi = FinFunction.([canon2[t],(canon2[s])])
           h=>(σsi=>σt)
         end)
-  amap = Dict(map(zip(attr(S),adom(S),acodom(S))) do (h,s,t)
+  amap = Dict(map(attrs(S)) do (h,s,t)
     h => FinFunction(canon2[s])
   end)
   CPerm(omap, hmap, amap)
@@ -155,7 +155,7 @@ end
 """Get all attribute values that are touched upon by the ACSet. Order them."""
 function attr_dict(X::StructACSet{S}) where S
   d = DefaultDict(()->Any[])
-  for (a,dt) in zip(attr(S),acodom(S))
+  for (a,_,dt) in attrs(S)
     append!(d[dt], X[a])
   end
   return Dict([k=>sort(collect(unique(v))) for (k,v) in collect(d)])
@@ -271,9 +271,9 @@ function from_adj(X::StructACSet{S}, oinds::Dict{Symbol, UnitRange},
   end...))
 
   # Recover the homs
-  for (h, s, t) in zip(hom(S),dom(S),codom(S))
+  for h in homs(S; just_names=true) 
     h_ = Symbol("_$h")
-    for (i,h_i) in enumerate(oinds[h_])
+    for (_,h_i) in enumerate(oinds[h_])
       src_ind, hom_ind = findall(m[h_i,:])
       src_tgt = findall(m[hom_ind,:])
       tgt_ind_ = setdiff(src_tgt, vcat([h_i,src_ind...]))
@@ -282,10 +282,9 @@ function from_adj(X::StructACSet{S}, oinds::Dict{Symbol, UnitRange},
     end
   end
   # Recover the attributes
-  for (h,s,t) in zip(attr(S), adom(S), acodom(S))
+  for (h,_,t) in attrs(S) 
     for (_,h_i) in enumerate(oinds[h])
       src_ind, tgt_ind = findall(m[h_i,:])
-      # println("i $i h_i $h_i src_ind $src_ind tgt_ind $tgt_ind")
       # src_ind == i || error("Unexpected")
       set_subpart!(Y, inv_dict[src_ind], h, attrdict[t][inv_dict[tgt_ind]])
     end
@@ -312,7 +311,7 @@ Apply a permutation on a CSet.
 """
 function apply(X::StructACSet{S}, p::CPerm) where S
   cd = deepcopy(X)
-  for (h,s,t) in zip(hom(S),dom(S),codom(S))
+  for h in homs(S; just_names=true) #(h,s,t) in zip(hom(S),dom(S),codom(S))
     σs, σt = [FinFunction((collect(x))) for x in p.homs[h]]
     σti = FinFunction(invperm(collect(σt)))
     f = FinFunction(X,h)
@@ -320,7 +319,7 @@ function apply(X::StructACSet{S}, p::CPerm) where S
     set_subpart!(cd, h, m)
   end
 
-  for (h,s) in zip(attr(S), adom(S))
+  for (h,s,_) in attrs(S)#  zip(attr_nums(S), adom_nums(S))
     σs = p.attrs[h]
     f = FinDomFunction(X,h)
     m =  compose(σs, f)

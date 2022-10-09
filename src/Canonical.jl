@@ -1,9 +1,9 @@
 module Canonical
 export autos, canonical_hash, canonical_iso
 
-using Catlab.Theories: adom, attr, attrtype, attr, adom, acodom, Ob, Hom
+using Catlab.Schemas: adom_nums, attr, attrtype, acodom_nums
+using Catlab.Theories: Ob, Hom
 using Catlab.Present, Catlab.CategoricalAlgebra
-using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
 using PermutationGroups
 
 using ..Perms: CDict, get_colors_by_size, is_perms, invert_perms, compose_perms,
@@ -23,25 +23,23 @@ the 'correct' canonical order.
 """
 function pseudo_cset(g::StructACSet{S}
                     )::Tuple{StructACSet, Dict{Symbol,Vector{Any}}} where {S}
-  tabs, arrs = collect(ob(S)), collect(hom(S))
-  src, tgt = dom(S), codom(S)
-  dtabs, darrs = collect(attrtype(S)), collect(attr(S))
-  dsrc, dtgt = adom(S), acodom(S)
 
   # Create copy of schema (+ an extra component for each datatype)
   pres = Presentation(FreeSchema)
-  xobs = [Ob(FreeSchema,t) for t in vcat(tabs,dtabs)]
-  xobsdic = Dict([t=>Ob(FreeSchema,t) for t in vcat(tabs,dtabs)])
-  n = length(tabs)
-  for x in xobs add_generator!(pres, x) end
+  xobs = [Ob(FreeSchema,t) for t in [ob(S)...,attrtypes(S)...]] 
+  xobsdic = Dict([t=>Ob(FreeSchema,t) for t in [ob(S)...,attrtypes(S)...]])
+  n = length(ob(S))
+  for x in xobs 
+    add_generator!(pres, x) 
+  end
 
-  for (arr, s, t) in zip(map(collect, [arrs, src, tgt])...)
+  for (arr, s, t) in homs(S)
     add_generator!(pres, Hom(arr, xobsdic[s], xobsdic[t]))
   end
 
   # Add an arrow for each attr and store all possible Data values
-  attrvals = Dict([t=>Set() for t in dtabs])
-  for (arr, s, t) in zip(darrs, dsrc, dtgt)
+  attrvals = Dict([t=>Set() for t in attrtypes(S)])
+  for (arr, s, t) in attrs(S)
     add_generator!(pres, Hom(arr, xobsdic[s], xobsdic[t]))
     union!(attrvals[t], Set(g[arr]))
   end
@@ -50,27 +48,23 @@ function pseudo_cset(g::StructACSet{S}
   attrvals = Dict([k=>sort(collect(x)) for (k,x) in collect(attrvals)])
 
   # Create and populate pseudo-cset
-  name = Symbol("Pseudo_$(typeof(g).name.name)")
-  expr = struct_acset(name, StructACSet, pres, index=vcat(arrs,darrs))
-  eval(expr)
-  csettype = eval(name)
-  res = Base.invokelatest(eval(name))
+  res = AnonACSet(pres, index=arrows(S; just_names=true))
 
   # Copy the original non-attr data
-  for t in tabs
+  for t in ob(S) 
     add_parts!(res, t, nparts(g,t))
   end
-  for a in arrs
+  for a in hom(S) # arrs
     set_subpart!(res, a, g[a])
   end
 
   # initialize pseudo data components
-  for t in dtabs
+  for t in attrtypes(S) 
     add_parts!(res, t, length(attrvals[t]))
   end
 
   # Replace data value with an index for each attribute
-  for (a,t) in zip(darrs, dtgt)
+  for (a,_,t) in attrs(S) 
     fks = [findfirst(==(v), attrvals[t]) for v in g[a]]
     set_subpart!(res, a, fks)
   end
@@ -102,24 +96,23 @@ TO DO test this heuristic vs random heuristics to see that it's actually
 effective.
 """
 function order_syms(::StructACSet{S})::Vector{Symbol} where {S}
-  os, arrs, srcs, tgts = ob(S), hom(S), dom(S), codom(S)
   function score_obj(obj::Symbol, scores::Dict{Symbol, Pair{Int,Int}})::Pair{Int,Int}
-    arr_in = sum([scores[s][1] for (s, t) in zip(srcs, tgts) if t == obj])
-    arr_ot = sum([scores[t][2] for (s, t) in zip(srcs, tgts) if s == obj])
+    arr_in = sum([scores[s][1] for (_,s, t) in homs(S) if t == obj])
+    arr_ot = sum([scores[t][2] for (_,s, t) in homs(S) if s == obj])
     return arr_in => arr_ot
   end
   getorder(scores)::Vector{Symbol} = map(last, sort([(b,a) for (a,b)
                                                      in collect(scores)]))
-  scores = Dict(zip(os, [(1=>1) for _ in os]))
+  scores = Dict(zip(ob(S), [(1=>1) for _ in ob(S)]))
   oldorder = []
   neworder = getorder(scores)
   while oldorder != neworder
     oldorder = neworder
-    scores = Dict([o=> pluspair(scores[o],score_obj(o, scores)) for o in os])
+    scores = Dict([o=> pluspair(scores[o],score_obj(o, scores)) for o in ob(S)])
     neworder = getorder(scores)
   end
   ordarrs = [(h, pluspair(scores[s], scores[t]))
-             for (h, s, t) in zip(arrs, srcs, tgts)]
+             for (h, s, t) in homs(S)]
   return reverse(getorder(ordarrs))
 end
 
@@ -132,12 +125,10 @@ function pseudo_cset_inv(g::StructACSet,
                          attrvals::Dict{Symbol,Vector{Any}}
                         )::StructACSet{S} where {S}
   orig = deepcopy(orig)
-  arrs = hom(S)
-  darrs, dtabs = attr(S), acodom(S)
-  for arr in arrs
+  for arr in hom(S)
     set_subpart!(orig, arr, g[arr])
   end
-  for (darr,tgt) in zip(darrs, dtabs)
+  for (darr,_,tgt) in attrs(S) 
     set_subpart!(orig, darr, attrvals[tgt][g[darr]])
   end
   return orig

@@ -5,6 +5,5 @@
 More background is found in the [documentation](https://algebraicjulia.github.io/CSetAutomorphisms.jl/dev/) or this [blog](https://www.algebraicjulia.org/blog/post/2022/01/cset-automorphisms/) post.
 
 ## To do
-- An upcoming refactor of Catlab using [CompTime.jl](https://github.com/olynch/CompTime.jl) will make it feasible to reimplement the core algorithm using code custom generated for a given C-Set, offering new opportunities for performance improvements.
-- For now, it is recommended to just use `NautyInterface` which reduces a C-Set automorphism problem to an undirected simple graph automorphism problem, which is fed `nauty.c`.
-
+- The recently-released [CompTime.jl](https://github.com/olynch/CompTime.jl) will make it feasible to reimplement the core algorithm using code custom generated for a given C-Set, offering new opportunities for performance improvements.
+- For now, it is recommended to just use `NautyInterface` which reduces a C-Set automorphism problem to an undirected simple graph automorphism problem, which is fed to `nauty.c`.

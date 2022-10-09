@@ -6,7 +6,6 @@ using ..NautyInterface
 
 using Test
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories
-using Catlab.CategoricalAlgebra.CSetDataStructures: struct_acset
 
 """
 Functions that help the automation of tests
@@ -38,10 +37,7 @@ function graph_to_cset(grph::StructACSet, name::Symbol;
     add_generator!(pres, Hom(ies(i), xobs[src], xobs[tgt]))
   end
 
-  expr = struct_acset(name, StructACSet, pres, index=ies(1:ne(grph)))
-  eval(expr)
-  csettype = eval(name)
-  return pres => Base.invokelatest(csettype)
+  return pres => AnonACSet(pres, index=ies(1:ne(grph)))
 end
 
   """Create n copies of a CSet based on a graph schema"""

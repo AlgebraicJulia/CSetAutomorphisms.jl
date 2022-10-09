@@ -80,8 +80,7 @@ end
 function apply_automorphism(c::StructACSet{S}, d::CDict)::StructACSet{S} where {S}
   check_auto(d) || error("received coloring that is not an automorphism: $d")
   new = deepcopy(c)
-  tabs, arrs, srcs, tgts = ob(S), hom(S), dom(S), codom(S)
-  for (arr, src, tgt) in zip(arrs,srcs,tgts)
+  for (arr, src, tgt) in homs(S)
     set_subpart!(new, d[src], arr, d[tgt][c[arr]])
   end
   return new

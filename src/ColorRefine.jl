@@ -34,11 +34,10 @@ elements that map to different data but otherwise can be permuted) as
 distinguishable.
 """
 function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
-  tabs, arrs, srcs, tgts = ob(S), hom(S), dom(S), codom(S)
   res = CData()
-  for tab in tabs # compute colordata for each tab
+  for tab in ob(S) # compute colordata for each tab
     subres = []  # vector of data for each in-arrow
-    for (arr, src, _) in filter(x->x[3]==tab, collect(zip(arrs,srcs,tgts))) # each incoming arrow
+    for (arr, src, _) in filter(x->x[3]==tab, homs(S)) # each incoming arrow
       color_src = color[src]
       subsubres = zeros(Int, nparts(g, tab), max0(color_src))
       for (colorsrc, arrtgt) in zip(color_src, g[arr])
@@ -49,7 +48,7 @@ function compute_color_data(g::StructACSet{S}, color::CDict)::CData where {S}
 
     # Also compute per-element data for table `tgt` (now, regard as a src)
     out_subres = Vector{Int}[color[tgt][g[oga]]
-                             for (oga, src, tgt) in zip(arrs, srcs, tgts)
+                             for (oga, src, tgt) in homs(S)
                              if src==tab]
 
     # Combine the two pieces of data for each elmeent in tgt, store in res

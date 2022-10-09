@@ -1,6 +1,5 @@
 module TestNautyInterface
 
-# using Revise
 using Test
 using Catlab.CategoricalAlgebra, Catlab.Graphs
 using CSetAutomorphisms
