@@ -1,6 +1,5 @@
 module TestCanonical
 
-# using Revise
 using Test
 using Catlab.CategoricalAlgebra, Catlab.Present, Catlab.Theories, Catlab.Graphs
 using CSetAutomorphisms

@@ -238,3 +238,11 @@ deps/nauty27r3/underlyingg
 deps/nauty27r3/vcolg
 
 deps/nauty27r3/watercluster2
+
+deps/nauty27r3/gtools.h
+
+deps/nauty27r3/listg
+
+deps/nauty27r3/makefile
+
+deps/nauty27r3/nauty.h

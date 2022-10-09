@@ -1,7 +1,6 @@
 module TestDiagrams
 
 using Test
-# using Revise
 using Catlab.CategoricalAlgebra, Catlab.Graphs, Catlab.Present, Catlab.Theories
 using CSetAutomorphisms
 
